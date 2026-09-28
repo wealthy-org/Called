@@ -454,12 +454,12 @@ body {
   font-size: 15px;
 }
 
-.home-page .spread {
+.home-page .spread,
+.result-view .spread {
   position: relative;
-  height: 190px;
+  min-height: 190px;
   margin: 26px 0 34px;
   min-width: 0;
-  overflow: hidden;
   font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-size: 12px;
 }
@@ -527,7 +527,7 @@ body {
 
 .home-page .spread .mk.up,
 .result-view .spread .mk.up {
-  bottom: 105px;
+  top: 95px;
 }
 
 .home-page .spread .mk.up i,
@@ -744,7 +744,8 @@ body {
     gap: 40px;
   }
 
-  .home-page .spread {
+  .home-page .spread,
+  .result-view .spread {
     overflow-x: auto;
   }
 
@@ -757,10 +758,6 @@ body {
     padding-top: 56px;
     padding-bottom: 56px;
   }
-}
-
-.result-view .spread {
-  overflow-x: auto;
 }
 
 @media (max-width: 560px) {
@@ -2374,5 +2371,221 @@ body {
   .ledger-page .lrecords-head {
     flex-direction: column;
     gap: 4px;
+  }
+}
+
+/* ── Result / Settlement Report ── */
+
+.report-page {
+}
+
+.report-empty {
+  margin-top: 48px;
+}
+
+.report-verdict-empty {
+  font-family: var(--font-display);
+  font-size: clamp(96px, 15vw, 220px);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: var(--mute);
+}
+
+.report-empty-copy {
+  margin-top: 18px;
+  color: var(--mute);
+  max-width: 360px;
+}
+
+.report-spread-empty {
+  margin-top: 48px;
+}
+
+.report-head {
+  margin-top: 48px;
+  align-items: start;
+}
+
+.report-outcome-col {
+  min-width: 0;
+}
+
+.report-verdict {
+  font-family: var(--font-display);
+  font-size: clamp(96px, 15vw, 220px);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+}
+
+.report-verdict-sub {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--mute);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-question-col {
+  min-width: 0;
+}
+
+.report-question-text {
+  font-size: clamp(18px, 2.5vw, 22px);
+  line-height: 1.35;
+  color: var(--bone);
+  max-width: 560px;
+}
+
+.report-meta {
+  margin-top: 24px;
+}
+
+.report-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-meta-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.report-meta-value {
+  color: var(--bone);
+}
+
+.report-spread-section {
+  margin-top: 64px;
+  border-top: 1px solid var(--line);
+  padding-top: 40px;
+}
+
+.report-section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--seal);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.report-spread-desc {
+  margin-top: 6px;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.report-spread {
+  margin-top: 24px;
+}
+
+.report-scores-section {
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+.report-scores td {
+  padding-block: 11px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.report-scores td:first-child {
+  width: 50%;
+}
+
+.report-scores td:nth-child(2) {
+  width: 84px;
+  font-family: var(--font-mono);
+}
+
+.report-scores th {
+  padding-block: 11px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.report-score-bar {
+  display: inline-block;
+  height: 8px;
+  background: var(--bone);
+  vertical-align: middle;
+}
+
+.report-scores-note {
+  margin-top: 16px;
+  font-size: 13.5px;
+  color: var(--mute);
+  max-width: 480px;
+}
+
+.report-evidence {
+  margin-top: 48px;
+  border-top: 1px solid var(--line);
+  padding-top: 40px;
+}
+
+.report-evidence-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.report-evidence-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 200px;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+
+.report-evidence-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-top: 2px;
+}
+
+.report-evidence-value {
+  color: var(--bone);
+}
+
+.report-evidence-desc {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+@media (max-width: 860px) {
+  .report-head {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .report-evidence-row {
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+  }
+
+  .report-evidence-desc {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .report-meta {
+    grid-template-columns: 1fr;
   }
 }
