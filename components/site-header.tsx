@@ -11,7 +11,17 @@ const NAV = [
   ["/me", "Me"],
 ] as const;
 
-export function SiteHeader() {
+const LANDING_NAV = [
+  ["#question", "Question"],
+  ["#result", "Result"],
+  ["#ledger", "Ledger"],
+  ["#leaderboard", "Leaderboard"],
+  ["#method", "Method"],
+  ["#faq", "Questions asked"],
+] as const;
+
+export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" }) {
+  const items = variant === "landing" ? LANDING_NAV : NAV;
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[rgba(10,10,11,0.92)] backdrop-blur">
       <nav className="mx-auto flex w-full max-w-[1180px] items-center gap-1 overflow-x-auto px-6 py-2">
@@ -22,7 +32,7 @@ export function SiteHeader() {
         >
           <CalledLockup kind="compact" height={30} />
         </Link>
-        {NAV.map(([href, label]) => (
+        {items.map(([href, label]) => (
           <Link
             key={href}
             href={href}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ROBINHOOD_CHAIN_ID } from "@/lib/env";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 export interface HeroProps {
@@ -32,6 +33,16 @@ function hexChar(): string {
   return HEX.charAt(Math.floor(Math.random() * HEX.length));
 }
 
+function readFontStack(cssVariable: string, fallback: string): string {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVariable)
+    .trim();
+  return value === "" ? fallback : value;
+}
+
 function useHorizonCanvas(reduced: boolean) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -46,6 +57,7 @@ function useHorizonCanvas(reduced: boolean) {
     }
 
     const pointer = { x: -9999, y: -9999, active: false };
+    const monoStack = readFontStack("--font-plex-mono", "monospace");
 
     interface Cell {
       x: number;
@@ -100,7 +112,6 @@ function useHorizonCanvas(reduced: boolean) {
 
     function paint() {
       context!.clearRect(0, 0, width, height);
-      context!.font = "500 12px var(--font-plex-mono), monospace";
       for (const cell of cells) {
         let alpha = cell.alpha;
         if (pointer.active) {
@@ -111,7 +122,7 @@ function useHorizonCanvas(reduced: boolean) {
             alpha = clamp(alpha + 0.6 * (1 - distance / POINTER_LIGHT_RADIUS), 0, 1);
           }
         }
-        context!.font = `500 ${cell.size}px var(--font-plex-mono), monospace`;
+        context!.font = `500 ${cell.size}px ${monoStack}, monospace`;
         context!.fillStyle = `rgba(161,157,149,${alpha})`;
         context!.fillText(cell.char, cell.x, cell.y);
       }
@@ -221,6 +232,7 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
     let radius = 1.8;
     let width = 0;
     let height = 0;
+    const displayStack = readFontStack("--font-doto", "sans-serif");
 
     function build() {
       if (canvas === null) {
@@ -245,7 +257,7 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
         return;
       }
       off.fillStyle = "#fff";
-      off.font = `700 ${fontPx}px var(--font-doto), sans-serif`;
+      off.font = `700 ${fontPx}px ${displayStack}, sans-serif`;
       off.textAlign = "center";
       off.textBaseline = "middle";
       off.fillText(text, width / 2, height / 2);
@@ -450,13 +462,13 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/questions"
+            href="#question"
             className="inline-flex min-h-[46px] items-center rounded-field bg-seal px-6 text-[15px] font-semibold text-void hover:bg-bone"
           >
             Seal a forecast
           </Link>
           <Link
-            href="/ledger"
+            href="#ledger"
             className="inline-flex min-h-[46px] items-center rounded-field border border-bone px-6 text-[15px] font-semibold text-bone hover:bg-bone hover:text-void"
           >
             Verify the ledger
@@ -487,6 +499,12 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
                   <span className="text-seal tabular-nums">{recordCount}</span>
                   <span className="text-mute"> records / </span>
                   <span className="text-seal">{anchorStatus}</span>
+                  <span className="text-mute"> / CHAIN </span>
+                  <span className="text-seal">
+                    Robinhood Chain {ROBINHOOD_CHAIN_ID}
+                  </span>
+                  <span className="text-mute"> / HASH </span>
+                  <span className="text-seal">SHA-256</span>
                 </span>
               ))}
             </div>

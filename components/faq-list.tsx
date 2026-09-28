@@ -40,6 +40,29 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
   },
 ];
 
+export const HOME_FAQ_ITEMS: readonly FaqItem[] = [
+  {
+    q: "Why can't I edit a forecast?",
+    a: "Editing would let anyone claim afterwards that they called it. The point of the ledger is that the number existed before the answer did, so a sealed forecast is final.",
+  },
+  {
+    q: "Does any money change hands?",
+    a: "No. There are no stakes and no payouts. Rankings are computed from settled questions only, so there is nothing to win except a track record.",
+  },
+  {
+    q: "What if the model gives no probability?",
+    a: "It is recorded as a failure. It is not converted into a number, because turning \"fairly likely\" into 0.7 is the most common way forecasting evaluations go wrong.",
+  },
+  {
+    q: "How is a question settled?",
+    a: "By the source and test written into the question before any forecast exists. The resolver reads one number and applies the test. Nobody decides afterwards.",
+  },
+  {
+    q: "Why show n next to every score?",
+    a: "Twenty settled questions is mostly noise. The count is part of the result, so it is always printed beside the score.",
+  },
+];
+
 export function FaqRow({ q, children }: { q: string; children: ReactNode }) {
   return (
     <details className="group">

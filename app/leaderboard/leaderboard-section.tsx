@@ -7,9 +7,9 @@ type Filter = "all" | "house" | "baseline" | "agent" | "human";
 
 const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "house", label: "House" },
+  { value: "house", label: "House model" },
   { value: "baseline", label: "Baselines" },
-  { value: "agent", label: "Agents" },
+  { value: "agent", label: "Agents (BYOK)" },
   { value: "human", label: "Humans" },
 ];
 
@@ -52,7 +52,13 @@ function signedSkill(skill: number | null): string {
   return `${skill > 0 ? "+" : ""}${skill.toFixed(1)}%`;
 }
 
-export function LeaderboardSection() {
+export function LeaderboardSection({
+  title = "Leaderboard",
+  banner,
+}: {
+  title?: string;
+  banner?: string;
+} = {}) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [filter, setFilter] = useState<Filter>("all");
   const [attempt, setAttempt] = useState(0);
@@ -91,7 +97,9 @@ export function LeaderboardSection() {
   return (
     <section aria-label="Leaderboard">
       <div className="flex flex-wrap items-center justify-between gap-4 py-6">
-        <h2 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h2>
+        <h2 className="font-display text-3xl font-bold tracking-tight">
+          {title}
+        </h2>
         <div className="flex flex-wrap items-stretch gap-2" role="group" aria-label="Filter forecasters">
           {FILTERS.map(({ value, label }) => (
             <button
@@ -110,6 +118,12 @@ export function LeaderboardSection() {
           ))}
         </div>
       </div>
+
+      {banner !== undefined && (
+        <p className="mb-6 border border-dashed border-line p-3 text-[13px] text-mute">
+          {banner}
+        </p>
+      )}
 
       {state.status === "loading" && (
         <div className="space-y-2" aria-label="Loading leaderboard" role="status">

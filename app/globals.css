@@ -36,6 +36,8 @@
 
 html {
   background-color: var(--void);
+  scroll-padding-top: 72px;
+  scroll-behavior: smooth;
 }
 
 body {

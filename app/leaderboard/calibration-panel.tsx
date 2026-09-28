@@ -6,9 +6,15 @@ import type { ScoredForecast } from "@/lib/scoring/skill";
 
 interface CalibrationPanelProps {
   series: Record<string, ScoredForecast[]>;
+  subtitle?: string;
+  labels?: Record<string, string>;
 }
 
-export function CalibrationPanel({ series }: CalibrationPanelProps) {
+export function CalibrationPanel({
+  series,
+  subtitle,
+  labels,
+}: CalibrationPanelProps) {
   const ids = Object.keys(series);
   const [selected, setSelected] = useState<string | null>(ids[0] ?? null);
 
@@ -32,6 +38,9 @@ export function CalibrationPanel({ series }: CalibrationPanelProps) {
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl font-bold">Calibration</h2>
       </div>
+      {subtitle !== undefined && (
+        <p className="mt-2 text-[13.5px] text-mute">{subtitle}</p>
+      )}
       <select
         aria-label="Choose a forecaster"
         value={effectiveSelected ?? ""}
@@ -40,7 +49,7 @@ export function CalibrationPanel({ series }: CalibrationPanelProps) {
       >
         {ids.map((id) => (
           <option key={id} value={id}>
-            {id}
+            {labels?.[id] ?? id}
           </option>
         ))}
       </select>
