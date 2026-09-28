@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { questions } from "@/db/schema";
 import type { SettleResult } from "./settle";
