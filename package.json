@@ -16,6 +16,7 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.ts",
     "gen:env": "tsx scripts/gen-env.ts",
+    "gen:brand": "tsx scripts/generate-brand.ts",
     "gen:icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {

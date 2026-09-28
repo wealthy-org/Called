@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Called — Identity</title>
+    <style>
+      :root {
+        --void: #0a0a0b;
+        --ink: #111113;
+        --line: #26262b;
+        --bone: #ece9e4;
+        --mute: #a19d95;
+        --seal: #ff5a36;
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--void);
+        color: var(--bone);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 72px 32px 120px;
+      }
+
+      .kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin: 0 0 16px;
+      }
+
+      h1 {
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0 0 12px;
+      }
+
+      h2 {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin: 0;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      section {
+        margin-top: 72px;
+      }
+
+      section > p {
+        color: var(--mute);
+        max-width: 640px;
+        margin: 22px 0 0;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        margin-top: 28px;
+      }
+
+      .cell {
+        background: var(--void);
+        padding: 40px 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        min-height: 220px;
+      }
+
+      .cell span {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+
+      .two {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .four {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .ladder {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 48px;
+        margin-top: 28px;
+        padding: 40px 32px;
+        border: 1px solid var(--line);
+        background: var(--ink);
+      }
+
+      .rung {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .rung span {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+
+      .light {
+        background: #f4f1ea;
+        color: #141414;
+      }
+
+      .light span {
+        color: #4d493f;
+      }
+
+      code {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--bone);
+        background: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 6px;
+      }
+
+      .note {
+        margin-top: 28px;
+        border: 1px dashed var(--line);
+        border-radius: 4px;
+        padding: 18px 22px;
+        font-size: 13px;
+        color: var(--mute);
+      }
+
+      .note strong {
+        color: var(--bone);
+        font-weight: 500;
+      }
+
+      footer {
+        margin-top: 96px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="kicker">Called — Brand Identity</p>
+      <h1>An evidence system for predictions.</h1>
+      <p style="color: var(--mute); max-width: 640px; margin: 0">
+        The mark is a near-closed arc with a solid block sealing its opening — a commitment made
+        before the outcome existed. Flat vector source, one stroke, one filled block.
+      </p>
+
+      <section>
+        <h2>01 — Symbol</h2>
+        <div class="grid two">
+          <div class="cell">
+            <img src="symbol/called-symbol-signature.svg" width="160" height="160" alt="Called symbol, signature colourway" />
+            <span>Signature — bone + seal</span>
+          </div>
+          <div class="cell">
+            <img src="symbol/called-symbol-seal.svg" width="160" height="160" alt="Called symbol, vermilion" />
+            <span>Seal — committed state</span>
+          </div>
+          <div class="cell">
+            <img src="symbol/called-symbol-white.svg" width="160" height="160" alt="Called symbol, mono white" />
+            <span>Mono white</span>
+          </div>
+          <div class="cell light">
+            <img src="symbol/called-symbol-black.svg" width="160" height="160" alt="Called symbol, mono black" />
+            <span>Mono black</span>
+          </div>
+        </div>
+        <p>
+          The arc is a <code>C</code>, a chain link, and a timeline. The opening is the moment before
+          an outcome exists. The block is the commitment that closes it, and one point on a
+          probability scale. Flat, cut terminals read as records with a timestamp.
+        </p>
+      </section>
+
+      <section>
+        <h2>02 — Wordmark</h2>
+        <div class="grid">
+          <div class="cell" style="min-height: 180px">
+            <img src="wordmark/called-wordmark-bone.svg" height="72" alt="Called wordmark" />
+            <span>Bone</span>
+          </div>
+          <div class="cell" style="min-height: 180px">
+            <img src="wordmark/called-wordmark-seal.svg" height="72" alt="Called wordmark, vermilion" />
+            <span>Seal</span>
+          </div>
+        </div>
+        <p>
+          Custom letterforms on the same 6-unit stroke as the mark — not Doto set as text, not any
+          installed typeface. The <code>C</code> is the sealed-arc construction scaled to wordmark
+          size, so the mark and the name are one idea. Uniform 10-unit optical gaps, mechanical
+          rhythm, no ligatures.
+        </p>
+      </section>
+
+      <section>
+        <h2>03 — Lockups</h2>
+        <div class="grid">
+          <div class="cell" style="min-height: 200px">
+            <img src="lockup/called-lockup-horizontal-signature.svg" height="64" alt="Called horizontal lockup" />
+            <span>Horizontal — 290 × 64 — footer, print</span>
+          </div>
+          <div class="cell" style="min-height: 200px">
+            <img src="lockup/called-lockup-horizontal-seal.svg" height="64" alt="Called horizontal lockup, vermilion" />
+            <span>Horizontal, seal colourway</span>
+          </div>
+          <div class="cell" style="min-height: 160px">
+            <img src="lockup/called-lockup-compact-signature.svg" height="32" alt="Called compact lockup" />
+            <span>Compact — 145 × 32 — header, navigation</span>
+          </div>
+        </div>
+        <p>
+          Mark first, then the wordmark, with the mark optically centred on the wordmark's
+          x-height. Two lockups only. Clearspace equals one cap height on every side.
+        </p>
+      </section>
+
+      <section>
+        <h2>04 — Size ladder</h2>
+        <div class="ladder">
+          <div class="rung"><img src="icons/called-icon-16.svg" width="16" height="16" alt="16 pixel icon" /><span>16</span></div>
+          <div class="rung"><img src="icons/called-icon-24.svg" width="24" height="24" alt="24 pixel icon" /><span>24</span></div>
+          <div class="rung"><img src="icons/called-icon-32.svg" width="32" height="32" alt="32 pixel icon" /><span>32</span></div>
+          <div class="rung"><img src="icons/called-icon-48.svg" width="48" height="48" alt="48 pixel icon" /><span>48</span></div>
+          <div class="rung"><img src="icons/called-icon-64.svg" width="64" height="64" alt="64 pixel icon" /><span>64</span></div>
+          <div class="rung"><img src="icons/called-icon-128.svg" width="128" height="128" alt="128 pixel icon" /><span>128</span></div>
+        </div>
+        <p>
+          At 24px and below the stroke thickens from 6 to 8 and the seal block grows to match, so the
+          opening and the block both survive. The variant is selected by size, never by hand.
+        </p>
+      </section>
+
+      <section>
+        <h2>05 — Construction</h2>
+        <div class="grid" style="grid-template-columns: 1fr">
+          <div class="cell" style="min-height: 320px">
+            <img src="construction.svg" width="256" height="256" alt="Mark over its construction grid" />
+            <span>64 × 64 grid — radius 21 — 44° opening — 6 unit stroke</span>
+          </div>
+        </div>
+        <p>
+          The bubble diagram is the mark over its construction grid: centre lines, the pitch circle,
+          and the block sealing the 44° opening at three o'clock.
+        </p>
+      </section>
+
+      <section>
+        <h2>06 — Rules</h2>
+        <p>
+          Never round the caps, close the opening, or remove the block — the gap and the block are
+          the mark. Never rotate, skew, outline, shadow or gradient it. Never rebuild the wordmark by
+          typing <code>Called</code> in Doto. Never use vermilion on anything but the seal block.
+          Never add a badge, pill, tagline or container.
+        </p>
+        <div class="note">
+          <strong>Colour.</strong> The mark is single-colour <code>currentColor</code>; only the seal
+          block is painted separately. <code>--seal #ff5a36</code> is otherwise reserved across the
+          product for sealed and live data — the identity is its one sanctioned exception.
+        </div>
+      </section>
+
+      <footer>
+        Regenerate with <code>npm run gen:brand</code> · rasterised app icons with
+        <code>npm run gen:icons</code> · full rules in brand/SPEC.md
+      </footer>
+    </div>
+  </body>
+</html>

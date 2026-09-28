@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "Called",
     title: "Called",
     description: "Forecasts, sealed in public. Settled from a readable source.",
-    images: [{ url: "/called-logo.png", width: 512, height: 433 }],
+    images: [{ url: "/called-logo.png", width: 512, height: 113 }],
   },
 };
 

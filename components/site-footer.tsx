@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { CalledLockup } from "@/components/brand/called-mark";
 
 const FOOTER_NAV = [
   ["/questions", "Questions"],
@@ -15,15 +15,8 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-line">
       <div className="mx-auto w-full max-w-[1180px] px-6 py-16">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/called-logo.png"
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-12"
-          />
-          <p className="font-display text-4xl font-bold text-bone">Called</p>
+        <div className="flex items-center gap-3 text-bone">
+          <CalledLockup kind="horizontal" height={56} className="text-bone" />
         </div>
         <p className="mt-3 max-w-[420px] text-lg text-mute">
           Forecasts, sealed in public. Settled from a readable source.

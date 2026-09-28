@@ -14,9 +14,10 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - Single test file: `npx.cmd vitest run lib/seal.test.ts`. Files are `**/*.test.ts`.
 - DB: `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle).
 - Dev data: `npm run db:seed` (destructive wipe + rebuild). Secrets: `npm run gen:env`.
-- Icons: `npm run gen:icons` regenerates `app/icon.png`, `app/apple-icon.png`,
-  `app/favicon.ico` and `public/called-logo.png` / `called-mark.png` from
-  `public/called-logo-no-bg.png`. Never hand-edit the generated binaries.
+- Icons: `npm run gen:icons` rasterises `app/icon.png`, `app/apple-icon.png`,
+  `app/favicon.ico` and `public/called-logo.png` / `called-mark.png` from the SVG
+  geometry in `lib/brand/`. `npm run gen:brand` writes the `brand/` SVG system.
+  Never hand-edit the generated binaries or the `brand/**/*.svg` files.
 - Playwright is installed (`@playwright/test`) but there are no e2e tests yet.
 - No CI and no `opencode.json` in repo. `package-lock.json` is present.
 - Windows: PowerShell blocks `npm.ps1`/`npx.ps1`. Always use `npm.cmd` / `npx.cmd`.
@@ -101,6 +102,6 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 ## Design constraints
 
 - Tokens: `--void #0a0a0b`, `--ink #111113`, `--line #26262b`, `--bone #ece9e4`, `--mute #a19d95`, `--seal #ff5a36`, `--paper #e9e4d8` (only light surface = receipt slip).
-- Fonts: Doto (display/numbers), IBM Plex Sans (body), IBM Plex Mono (hash/data). Vermilion only for sealed/clickable/broken-live data; VALID stays bone.
+- Fonts: Doto (display/numbers), IBM Plex Sans (body), IBM Plex Mono (hash/data). Vermilion only for sealed/clickable/broken-live data; VALID stays bone. One exception: the identity's seal block is `--seal` by design (`components/brand/called-mark.tsx`, `brand/SPEC.md`).
 - No pill buttons (radius 2/4/6px; only slider thumb round), no capsule badges (plain mono kicker), no generic icon lib/emoji (SVG), no decorative gradients, no links to nonexistent pages, no invented numbers (honest empty states; SAMPLE label only on demo data).
 - A11y/responsive: 44px touch targets, visible bone focus ring, `prefers-reduced-motion` disables all motion, diagrams need `role="img"` + summary `aria-label`, no horizontal overflow at 1440/390 (tables scroll inside container).

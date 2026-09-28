@@ -1,62 +1,41 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import sharp from "sharp";
+import { DISPLAY_SYMBOL_CONFIG, MICRO_SYMBOL_CONFIG, iconConfigFor } from "../lib/brand/geometry";
+import { lockupSvg, symbolSvg } from "../lib/brand/svg";
 
 const ROOT = process.cwd();
-const SOURCE = join(ROOT, "public", "called-logo-no-bg.png");
-const VOID = "#0a0a0b";
-const ICON_PADDING = 0.16;
 const ICO_SIZES = [16, 32, 48] as const;
+const FAVICON_APPLE_SIZE = 180;
+const FAVICON_SIZE = 512;
 
 interface Written {
   path: string;
   bytes: number;
 }
 
-async function loadMark(): Promise<Buffer> {
-  return sharp(SOURCE).trim({ threshold: 1 }).png().toBuffer();
+const written: Written[] = [];
+
+async function emit(path: string, data: Buffer): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, data);
+  written.push({ path: path.slice(ROOT.length + 1), bytes: data.length });
 }
 
-async function tile(mark: Buffer, size: number, background: string | null): Promise<Buffer> {
-  const inner = Math.round(size * (1 - ICON_PADDING * 2));
-  const resized = await sharp(mark)
-    .resize(inner, inner, { fit: "inside", withoutEnlargement: false })
-    .png()
-    .toBuffer();
-
-  const canvas = background === null ? { r: 0, g: 0, b: 0, alpha: 0 } : background;
-
-  return sharp({
-    create: { width: size, height: size, channels: 4, background: canvas },
-  })
-    .composite([{ input: resized, gravity: "center" }])
+async function rasterise(svg: string, width: number, height: number): Promise<Buffer> {
+  return sharp(Buffer.from(svg), { density: 384 })
+    .resize(width, height, { fit: "contain" })
     .png()
     .toBuffer();
 }
 
-async function squareMark(mark: Buffer, size: number): Promise<Buffer> {
-  return sharp({
-    create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-  })
-    .composite([
-      {
-        input: await sharp(mark)
-          .resize(size, size, { fit: "inside" })
-          .png()
-          .toBuffer(),
-        gravity: "center",
-      },
-    ])
-    .png()
-    .toBuffer();
-}
+const sealSymbol = (size: number) =>
+  symbolSvg({ color: "seal", sealColor: "seal", config: iconConfigFor(size), size });
 
-interface IcoImage {
-  size: number;
-  data: Buffer;
-}
+const signatureSymbol = (size: number) =>
+  symbolSvg({ color: "bone", sealColor: "seal", config: DISPLAY_SYMBOL_CONFIG, size });
 
-function buildIco(images: readonly IcoImage[]): Buffer {
+function buildIco(images: readonly { size: number; data: Buffer }[]): Buffer {
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0);
   header.writeUInt16LE(1, 2);
@@ -82,34 +61,38 @@ function buildIco(images: readonly IcoImage[]): Buffer {
 }
 
 async function main(): Promise<void> {
-  const written: Written[] = [];
-
-  async function emit(path: string, data: Buffer): Promise<void> {
-    await mkdir(join(path, ".."), { recursive: true });
-    await writeFile(path, data);
-    written.push({ path: path.slice(ROOT.length + 1), bytes: data.length });
-  }
-
-  const mark = await loadMark();
-
-  await emit(join(ROOT, "app", "icon.png"), await tile(mark, 512, null));
-  await emit(join(ROOT, "app", "apple-icon.png"), await tile(mark, 180, VOID));
   await emit(
-    join(ROOT, "public", "called-logo.png"),
-    await sharp(mark).resize(512, 512, { fit: "inside" }).png().toBuffer(),
+    join(ROOT, "app", "icon.png"),
+    await rasterise(sealSymbol(FAVICON_SIZE), FAVICON_SIZE, FAVICON_SIZE),
   );
-  await emit(join(ROOT, "public", "called-mark.png"), await squareMark(mark, 512));
+  await emit(
+    join(ROOT, "app", "apple-icon.png"),
+    await rasterise(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none"><rect width="64" height="64" fill="#0a0a0b"/>${signatureSymbol(
+        64,
+      )
+        .replace(/^<svg[^>]*>/, "")
+        .replace(/<\/svg>\s*$/, "")}</svg>`,
+      FAVICON_APPLE_SIZE,
+      FAVICON_APPLE_SIZE,
+    ),
+  );
 
-  const icoImages: IcoImage[] = [];
-  for (const size of ICO_SIZES) {
-    icoImages.push({ size, data: await tile(mark, size, null) });
-  }
+  const logo = lockupSvg({ kind: "horizontal", color: "bone", sealColor: "seal" });
+  await emit(join(ROOT, "public", "called-logo.png"), await rasterise(logo, 512, 113));
+  await emit(join(ROOT, "public", "called-mark.png"), await rasterise(signatureSymbol(512), 512, 512));
+
+  const icoImages = await Promise.all(
+    ICO_SIZES.map(async (size) => ({ size, data: await rasterise(sealSymbol(size), size, size) })),
+  );
   await emit(join(ROOT, "app", "favicon.ico"), buildIco(icoImages));
 
   for (const entry of written) {
     console.log(`  ${entry.path}  ${entry.bytes} bytes`);
   }
-  console.log(`icons generated from ${SOURCE}`);
+  console.log(
+    `icons generated: favicon + icon are the seal colourway on transparency, apple-icon is opaque void, micro stroke ${MICRO_SYMBOL_CONFIG.strokeWidth}`,
+  );
 }
 
 main().catch((error: unknown) => {
