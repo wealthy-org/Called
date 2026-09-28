@@ -105,6 +105,7 @@ export const seals = pgTable(
       .notNull()
       .references(() => forecasters.id, { onDelete: "restrict" }),
     commit: text("commit").notNull(),
+    salt: text("salt").notNull(),
     payloadCiphertext: text("payload_ciphertext").notNull(),
     sealedAt: timestamp("sealed_at", { withTimezone: true }).notNull(),
     recordIndex: integer("record_index").notNull(),

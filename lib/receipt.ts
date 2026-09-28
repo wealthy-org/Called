@@ -102,6 +102,7 @@ export interface ReceiptFields {
   sealId: string;
   recordIndex: number;
   commit: string;
+  salt: string;
   recordHash: string;
   sealedAt: Date;
   questionId: string;
@@ -117,6 +118,7 @@ export function receiptMessage(fields: ReceiptFields): string {
     fields.forecasterId,
     String(fields.recordIndex),
     fields.commit,
+    fields.salt,
     fields.recordHash,
     fields.sealedAt.toISOString(),
   ].join("|");

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { questions } from "@/db/schema";
-import { encryptPayload, newSalt } from "@/lib/crypto-box";
+import { encryptPayload } from "@/lib/crypto-box";
 import { serverEnv, type EnvSource } from "@/lib/env";
 import { commitHash, stablePayloadJson, validateProbability } from "@/lib/seal";
 import { appendSeal, ensureForecaster } from "@/lib/seal-store";
@@ -14,6 +14,7 @@ interface SealBody {
   questionId?: unknown;
   p?: unknown;
   rationale?: unknown;
+  salt?: unknown;
 }
 
 export async function POST(request: Request) {
@@ -78,9 +79,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "sealing has closed" }, { status: 409 });
   }
 
+  if (typeof body.salt !== "string" || !/^[0-9a-f]{32}$/.test(body.salt)) {
+    return NextResponse.json(
+      { error: "salt must be 32 lowercase hex characters" },
+      { status: 400 },
+    );
+  }
+
+  const salt = body.salt;
   const forecasterId = `human:${session.address.toLowerCase()}`;
   const payloadJson = stablePayloadJson({ p, handle: session.handle, rationale });
-  const salt = newSalt();
   const commit = await commitHash(payloadJson, salt);
   const payloadCiphertext = await encryptPayload(payloadJson, env.PAYLOAD_ENCRYPTION_KEY);
 
@@ -104,6 +112,7 @@ export async function POST(request: Request) {
     modelVersion: null,
     promptHash: null,
     commit,
+    salt,
     payloadCiphertext,
     sealedAt: new Date(),
     receiptSigningKey: env.RECEIPT_SIGNING_KEY,
@@ -120,6 +129,7 @@ export async function POST(request: Request) {
     {
       sealId: result.sealId,
       commit: result.commit,
+      salt,
       recordIndex: result.recordIndex,
       hash: result.hash,
       receiptId: result.receiptId,

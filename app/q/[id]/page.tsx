@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { milestoneFor } from "@/lib/countdown";
 import { getQuestion } from "@/lib/question-store";
 import { Countdown } from "./countdown";
+import { SealForm } from "./seal-form";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +84,15 @@ export default async function QuestionPage({
           )}
         </p>
       </div>
+
+      {question.status === "open" ? (
+        <section className="mt-8 border-t border-line pt-6">
+          <h2 className="font-display text-xl text-bone">Seal a prediction</h2>
+          <div className="mt-4">
+            <SealForm questionId={question.id} />
+          </div>
+        </section>
+      ) : null}
 
       {question.status === "settled" || question.status === "void" ? (
         <div className="mt-6 border-t border-line pt-4">

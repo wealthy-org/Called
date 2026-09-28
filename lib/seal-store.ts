@@ -27,6 +27,7 @@ export interface AppendSealInput {
   ownerWallet: string | null;
   forecasterName: string;
   commit: string;
+  salt: string;
   payloadCiphertext: string;
   sealedAt: Date;
   model: string | null;
@@ -89,6 +90,7 @@ export async function appendSeal(input: AppendSealInput): Promise<AppendResult> 
         questionId: input.questionId,
         forecasterId: input.forecasterId,
         commit: input.commit,
+        salt: input.salt,
         payloadCiphertext: input.payloadCiphertext,
         sealedAt: input.sealedAt,
         recordIndex,
@@ -112,6 +114,7 @@ export async function appendSeal(input: AppendSealInput): Promise<AppendResult> 
       sealId: inserted.id,
       recordIndex: inserted.recordIndex,
       commit: inserted.commit,
+      salt: input.salt,
       recordHash: inserted.hash,
       sealedAt: input.sealedAt,
       questionId: input.questionId,

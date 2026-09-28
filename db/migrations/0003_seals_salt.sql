@@ -1,0 +1,1 @@
+ALTER TABLE "seals" ADD COLUMN "salt" text NOT NULL;

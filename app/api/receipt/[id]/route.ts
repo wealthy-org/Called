@@ -20,6 +20,7 @@ export async function GET(
       forecasterId: seals.forecasterId,
       recordIndex: seals.recordIndex,
       commit: seals.commit,
+      salt: seals.salt,
       recordHash: seals.hash,
       sealedAt: seals.sealedAt,
     })
@@ -41,6 +42,7 @@ export async function GET(
       sealId: row.sealId,
       recordIndex: row.recordIndex,
       commit: row.commit,
+      salt: row.salt,
       recordHash: row.recordHash,
       sealedAt: row.sealedAt,
       questionId: row.questionId,
@@ -57,6 +59,7 @@ export async function GET(
       forecasterId: row.forecasterId,
       recordIndex: row.recordIndex,
       commit: row.commit,
+      salt: row.salt,
       recordHash: row.recordHash,
       sealedAt: row.sealedAt.toISOString(),
       algorithm: "Ed25519",
