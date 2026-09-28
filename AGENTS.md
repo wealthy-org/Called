@@ -1,14 +1,32 @@
 # AGENTS.md — Called
 
-Fresh `create-next-app` boilerplate + full product spec in `docs/`. Code does not implement spec yet.
+Full product implementation of the spec in `docs/`. `docs/TASKS.md` (T-001–T-067) is
+complete; work from it for anything still open, then from `docs/PRD.md`.
 
 ## Commands
 
 - `npm run dev` / `npm run build` / `npm start` — dev/build/serve.
 - `npm run lint` (= `eslint`, flat config, Next core-web-vitals + typescript).
-- Typecheck: `npx tsc --noEmit` (no script defined).
-- No test runner installed. Docs plan Vitest + Playwright — install before adding tests.
-- No lockfile, CI, or `opencode.json` in repo.
+- Typecheck: `npm run typecheck` (= `tsc --noEmit`).
+- Tests: `npm test` (= `vitest run`) / `npm run test:watch`. Vitest 5.
+- DB: `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle).
+- Playwright is NOT installed. Docs plan it — install before adding e2e tests.
+- No CI and no `opencode.json` in repo. `package-lock.json` is present.
+- Windows: PowerShell blocks `npm.ps1`/`npx.ps1`. Always use `npm.cmd` / `npx.cmd`.
+  Ripgrep is not on PATH; use the grep tool, never shell `rg`.
+
+## Gotchas (hard-won)
+
+- Never import a `*-store.ts` (or anything importing `@/db`) from pure logic or a
+  test: tests throw `DATABASE_URL is not set`. Keep pure core and DB store split.
+- After adding a route, run `npm run build` before `tsc --noEmit`, or `PageProps`/
+  `AppRoutes` fail against stale `.next/types`. Delete `tsconfig.tsbuildinfo` after
+  changing `tsconfig.json` options if errors persist.
+- `react-hooks/set-state-in-effect` is a lint ERROR: no synchronous `setState` in an
+  effect body. Use `useSyncExternalStore` for external stores, derive values in render.
+- A server component/page that touches the DB needs `export const dynamic =
+  "force-dynamic"` or the build prerender fails.
+- drizzle-orm: `uniqueIndex(...)` must be called inside the `pgTable` callback.
 
 ## Docs map (spec source of truth)
 
@@ -16,16 +34,21 @@ Fresh `create-next-app` boilerplate + full product spec in `docs/`. Code does no
 - `docs/ARCHITECTURE.md` — stack, endpoints, cron, schema.
 - `docs/DESIGN.md` — colors, type, motion, a11y; prototype HTML is visual reference.
 - `docs/Called_Brief.md` — condensed duplicate of above; check PRD/ARCHITECTURE on conflict.
-- `docs/TASKS.md` — 67 granular tasks (T-001–T-067) per PRD §24 phases; work from here, not raw PRD.
+- `docs/TASKS.md` — 67 granular tasks (T-001–T-067) per PRD §24 phases; all complete.
 - Build order: PRD §24 (foundation → seal/ledger/receipt → settle → scoring → Cassandra/BYOK → anchor → homepage).
 
 ## Current code
 
-- Next.js 16.3.6 App Router, React 19, TS strict, Tailwind v4.
-- Entrypoints: `app/layout.tsx`, `app/page.tsx`, `app/globals.css`. No `src/`, no routes, DB, auth yet.
+- Next.js 16.3.6 App Router, React 19, TS strict (target ES2020), Tailwind v4.
+- `app/` — routes and pages; `lib/` — pure logic plus `*-store.ts` DB access;
+  `components/` — shared UI; `db/schema.ts` + 5 migrations; `config/` — house tiers
+  and vague words; `prompts/forecaster.md`; `assets/fonts/` for the OG card.
+- Entrypoints: `app/layout.tsx`, `app/page.tsx`, `app/globals.css`.
 - Alias `@/*` → `./*` (not `./src/*`).
 - Tailwind v4 style: `@import "tailwindcss"` + `@theme inline`; PostCSS plugin `@tailwindcss/postcss`. No `tailwind.config`.
-- Planned routes not built: `/questions`, `/q/[id]`, `/leaderboard`, `/f/[handle]`, `/ledger`, `/receipt/[id]`, `/agents`, `/method`, `/faq`, `/me`, `/admin`.
+- Routes are built; see `README.md` for the full map (pages, API groups, cron).
+- There is no browser wallet sign-in UI: the SIWE routes exist but nothing calls
+  them, so session-gated pages show their signed-out state.
 
 ## Business invariants (do not violate when implementing)
 
