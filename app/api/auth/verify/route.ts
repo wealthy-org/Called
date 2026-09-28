@@ -65,14 +65,16 @@ export async function POST(request: Request) {
     .from(users)
     .where(eq(users.walletAddress, result.address));
 
-  if (existing === undefined) {
-    await db
-      .insert(users)
-      .values({ walletAddress: result.address, handle })
-      .onConflictDoNothing();
-  }
-
   const finalHandle = existing?.handle ?? handle;
+  const token = await sessionToken(result.address, env.SESSION_SECRET);
+
+  await db
+    .insert(users)
+    .values({ walletAddress: result.address, handle: finalHandle, sessionToken: token })
+    .onConflictDoUpdate({
+      target: users.walletAddress,
+      set: { sessionToken: token },
+    });
 
   const response = NextResponse.json({
     address: result.address,
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
   });
 
   response.cookies.set(NONCE_COOKIE, "", { ...sessionCookieOptions, maxAge: 0 });
-  response.cookies.set(SESSION_COOKIE, await sessionToken(result.address, env.SESSION_SECRET), {
+  response.cookies.set(SESSION_COOKIE, token, {
     ...sessionCookieOptions,
     maxAge: SESSION_TTL_SECONDS,
   });

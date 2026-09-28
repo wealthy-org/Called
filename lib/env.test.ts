@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  InvalidEnvError,
   isAdmin,
   MissingEnvError,
   parseAdminWallets,
@@ -14,6 +15,9 @@ const complete = {
   SESSION_SECRET: "session-secret",
   ADMIN_WALLETS: "0xAAA,0xbbb",
   CRON_SECRET: "cron-secret",
+  ROBINHOOD_RPC_URL: "https://rpc.test/chain-4663",
+  ANCHOR_PRIVATE_KEY: "0xanchor",
+  PAYLOAD_ENCRYPTION_KEY: "payload-encryption-key",
   HOUSE_TEMPERATURE: "0",
 } satisfies EnvSource;
 
@@ -36,7 +40,10 @@ describe("serverEnv", () => {
     const missing = (error as MissingEnvError).variables;
     expect(missing).toContain("DATABASE_URL");
     expect(missing).toContain("CRON_SECRET");
-    expect(missing).toHaveLength(5);
+    expect(missing).toContain("ROBINHOOD_RPC_URL");
+    expect(missing).toContain("ANCHOR_PRIVATE_KEY");
+    expect(missing).toContain("PAYLOAD_ENCRYPTION_KEY");
+    expect(missing).toHaveLength(8);
   });
 
   it("treats blank values as missing", () => {
@@ -45,10 +52,16 @@ describe("serverEnv", () => {
     );
   });
 
-  it("rejects a non numeric house temperature", () => {
-    expect(() =>
-      serverEnv({ ...complete, HOUSE_TEMPERATURE: "cold" }),
-    ).toThrow(/HOUSE_TEMPERATURE/);
+  it("rejects a non numeric house temperature with a named error", () => {
+    let error: unknown;
+    try {
+      serverEnv({ ...complete, HOUSE_TEMPERATURE: "cold" });
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(InvalidEnvError);
+    expect((error as InvalidEnvError).variable).toBe("HOUSE_TEMPERATURE");
+    expect((error as InvalidEnvError).message).toMatch(/must be a number/);
   });
 
   it("defaults the house temperature to zero when absent", () => {

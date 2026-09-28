@@ -6,6 +6,9 @@ export interface ServerEnv {
   SESSION_SECRET: string;
   ADMIN_WALLETS: string[];
   CRON_SECRET: string;
+  ROBINHOOD_RPC_URL: string;
+  ANCHOR_PRIVATE_KEY: string;
+  PAYLOAD_ENCRYPTION_KEY: string;
   HOUSE_TEMPERATURE: number;
 }
 
@@ -19,6 +22,16 @@ export class MissingEnvError extends Error {
   constructor(readonly variables: readonly string[]) {
     super(`Missing required environment variable(s): ${variables.join(", ")}`);
     this.name = "MissingEnvError";
+  }
+}
+
+export class InvalidEnvError extends Error {
+  constructor(
+    readonly variable: string,
+    readonly problem: string,
+  ) {
+    super(`Environment variable ${variable} ${problem}`);
+    this.name = "InvalidEnvError";
   }
 }
 
@@ -54,12 +67,16 @@ export function serverEnv(
     "SESSION_SECRET",
     "ADMIN_WALLETS",
     "CRON_SECRET",
+    "ROBINHOOD_RPC_URL",
+    "ANCHOR_PRIVATE_KEY",
+    "PAYLOAD_ENCRYPTION_KEY",
   ]);
 
   const temperature = source.HOUSE_TEMPERATURE?.trim();
-  const parsedTemperature = temperature === undefined || temperature === "" ? 0 : Number(temperature);
+  const parsedTemperature =
+    temperature === undefined || temperature === "" ? 0 : Number(temperature);
   if (Number.isNaN(parsedTemperature)) {
-    throw new MissingEnvError(["HOUSE_TEMPERATURE (not a number)"]);
+    throw new InvalidEnvError("HOUSE_TEMPERATURE", "must be a number");
   }
 
   return {
@@ -68,6 +85,9 @@ export function serverEnv(
     SESSION_SECRET: read(source, "SESSION_SECRET"),
     ADMIN_WALLETS: parseAdminWallets(read(source, "ADMIN_WALLETS")),
     CRON_SECRET: read(source, "CRON_SECRET"),
+    ROBINHOOD_RPC_URL: read(source, "ROBINHOOD_RPC_URL"),
+    ANCHOR_PRIVATE_KEY: read(source, "ANCHOR_PRIVATE_KEY"),
+    PAYLOAD_ENCRYPTION_KEY: read(source, "PAYLOAD_ENCRYPTION_KEY"),
     HOUSE_TEMPERATURE: parsedTemperature,
   };
 }

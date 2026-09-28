@@ -32,11 +32,15 @@ export const users = pgTable(
   {
     walletAddress: text("wallet_address").primaryKey(),
     handle: text("handle").notNull(),
+    sessionToken: text("session_token"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
-  (t) => [uniqueIndex("users_handle_unique").on(t.handle)],
+  (t) => [
+    uniqueIndex("users_handle_unique").on(t.handle),
+    uniqueIndex("users_session_token_unique").on(t.sessionToken),
+  ],
 );
 
 export const forecasters = pgTable(
