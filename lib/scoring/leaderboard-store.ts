@@ -14,6 +14,7 @@ import { type ForecasterScoreInput } from "./leaderboard-core";
 export interface ForecasterScoreRow {
   forecasterId: string;
   handle: string;
+  name: string;
   kind: string;
   model: string | null;
   modelVersion: string | null;
@@ -35,6 +36,7 @@ export async function loadForecasterScores(): Promise<LoadedScores> {
       .select({
         forecasterId: seals.forecasterId,
         handle: users.handle,
+        name: forecasters.name,
         kind: forecasters.kind,
         model: forecasters.model,
         modelVersion: forecasters.modelVersion,
@@ -74,7 +76,8 @@ export async function loadForecasterScores(): Promise<LoadedScores> {
     const group = groups.get(key) ?? [];
     group.push({
       forecasterId: row.forecasterId,
-      handle: row.handle ?? `w${row.forecasterId}`,
+      handle: row.kind === "human" ? (row.handle ?? row.name) : row.name,
+      name: row.name,
       kind: row.kind,
       model: row.model,
       modelVersion: row.modelVersion,

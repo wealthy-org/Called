@@ -81,12 +81,9 @@ async function resolveForecasterIds(handle: string): Promise<string[]> {
       .select({ id: forecasters.id })
       .from(forecasters)
       .where(eq(forecasters.ownerWallet, userRow.walletAddress));
-    const ids = owned.map((row) => row.id);
     const human = `human:${userRow.walletAddress.toLowerCase()}`;
-    if (!ids.includes(human)) {
-      ids.push(human);
-    }
-    return ids;
+    const others = owned.map((row) => row.id).filter((id) => id !== human);
+    return [human, ...others];
   }
 
   if (handle.startsWith("w")) {

@@ -76,6 +76,14 @@ describe("buildLeaderboard", () => {
     expect(ranked.length).toBe(1);
   });
 
+  it("excludes entries whose forecaster is not ranked", () => {
+    const unranked = { ...base, handle: "stray", isRanked: false, skill: 999 };
+    expect(buildLeaderboard([unranked])).toEqual([]);
+    expect(buildLeaderboard([base, unranked]).map((e) => e.handle)).toEqual([
+      "alice",
+    ]);
+  });
+
   it("sorts by skill descending", () => {
     const low = { ...base, handle: "low", skill: 10 };
     const high = { ...base, handle: "high", skill: 90 };

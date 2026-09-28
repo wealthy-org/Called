@@ -11,6 +11,7 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - Tests: `npm test` (= `vitest run`) / `npm run test:watch`. Vitest 5.
 - Single test file: `npx.cmd vitest run lib/seal.test.ts`. Files are `**/*.test.ts`.
 - DB: `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle).
+- Dev data: `npm run db:seed` (destructive wipe + rebuild). Secrets: `npm run gen:env`.
 - Playwright is NOT installed. Docs plan it — install before adding e2e tests.
 - No CI and no `opencode.json` in repo. `package-lock.json` is present.
 - Windows: PowerShell blocks `npm.ps1`/`npx.ps1`. Always use `npm.cmd` / `npx.cmd`.
@@ -36,6 +37,10 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - `lib/env.ts` defines its own `EnvSource = Record<string, string | undefined>`; do not
   use `NodeJS.ProcessEnv` (Next's global augmentation makes it require `NODE_ENV`).
   Test fixtures use `satisfies EnvSource`.
+- `db/seed.ts` is destructive: it TRUNCATEs every table. Row-level triggers (the
+  append-only `seals` rules) do NOT fire on TRUNCATE, which is why this works. It
+  refuses to run when `NODE_ENV=production` unless `ALLOW_DB_SEED=1`. Scripts import
+  `db/load-env` first so `.env` is loaded before `@/db` reads `DATABASE_URL`.
 
 ## Docs map (spec source of truth)
 

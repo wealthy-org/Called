@@ -66,7 +66,7 @@ export function summarizeForecaster(input: ForecasterScoreInput): LeaderboardEnt
 
 export function buildLeaderboard(entries: LeaderboardEntry[]): LeaderboardEntry[] {
   return entries
-    .filter((entry) => !entry.provisional)
+    .filter((entry) => !entry.provisional && entry.isRanked)
     .sort((a, b) => {
       const aSkill = a.skill ?? -Infinity;
       const bSkill = b.skill ?? -Infinity;

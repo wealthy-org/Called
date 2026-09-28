@@ -37,26 +37,36 @@ Prerequisites: Node 24 and a Postgres database.
 ```bash
 npm install
 cp .env.example .env   # fill in the values below
+npm run gen:env        # prints fresh keys for the four secret env vars
 npm run db:generate
 npm run db:migrate
+npm run db:seed        # optional: dev data (two open questions, a valid chain)
 npm run dev            # http://localhost:3000
 ```
 
 ### Environment
 
+`npm run gen:env` prints values for `RECEIPT_SIGNING_KEY`,
+`PAYLOAD_ENCRYPTION_KEY`, `SESSION_SECRET`, `CRON_SECRET` and
+`ANCHOR_PRIVATE_KEY`. The rest come from elsewhere:
+
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string. |
 | `NEXT_PUBLIC_ROBINHOOD_CHAIN_ID` | yes | `4663`. Public. |
-| `ROBINHOOD_RPC_URL` | yes | RPC for the anchor transaction. |
-| `ANCHOR_PRIVATE_KEY` | yes | Dedicated anchor wallet key. |
+| `ROBINHOOD_RPC_URL` | yes | RPC for the anchor transaction. Get it from the Robinhood Chain developer portal. |
+| `ANCHOR_PRIVATE_KEY` | yes | Dedicated anchor wallet key. Fund it from a faucet so it can pay gas. |
 | `RECEIPT_SIGNING_KEY` | yes | Ed25519 seed (64 hex or base64). Public key is published. |
 | `PAYLOAD_ENCRYPTION_KEY` | yes | AES-256-GCM key for unrevealed payloads. |
 | `SESSION_SECRET` | yes | SIWE session token derivation. |
-| `ADMIN_WALLETS` | yes | Comma-separated admin addresses. |
+| `ADMIN_WALLETS` | yes | Comma-separated admin addresses. Put your own sign-in wallet here. |
 | `CRON_SECRET` | yes | `Authorization: Bearer` for cron routes. |
-| `OPENROUTER_API_KEY` | no | House forecaster. Absent means the house tier is reported unavailable. |
+| `OPENROUTER_API_KEY` | no | House forecaster. Get it from openrouter.ai. Absent means the house tier is reported unavailable. |
 | `HOUSE_TEMPERATURE` | no | Defaults to `0`. |
+
+Losing `PAYLOAD_ENCRYPTION_KEY`, `RECEIPT_SIGNING_KEY` or `SESSION_SECRET` is
+destructive: unrevealed payloads become unreadable, old signatures stop
+verifying, and every session is signed out.
 
 ## Commands
 
@@ -73,6 +83,8 @@ npm run dev            # http://localhost:3000
 | `npm run db:migrate` | Apply migrations. |
 | `npm run db:push` | Push schema without a migration. |
 | `npm run db:studio` | Drizzle Studio. |
+| `npm run db:seed` | Wipe and insert dev data. Refuses to run when `NODE_ENV=production`. |
+| `npm run gen:env` | Print fresh values for the secret env vars. |
 
 ## Layout
 
