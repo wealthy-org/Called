@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { sql } from "@/db";
 import { VerifyButton, type LedgerRecordView } from "./verify";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +37,9 @@ export default async function LedgerPage() {
   const fromIndex = recent.length > 0 ? recent[0].index : 0;
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 py-12">
+    <>
+      <SiteHeader />
+    <main className="wrap section">
       <header className="border-b border-line pb-6">
         <p className="font-mono text-xs uppercase tracking-[0.12em] text-mute">
           append-only
@@ -114,5 +118,7 @@ export default async function LedgerPage() {
         </p>
       </footer>
     </main>
+    <SiteFooter />
+    </>
   );
 }

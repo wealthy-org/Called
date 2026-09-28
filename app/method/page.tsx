@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { ReceiptSlip } from "@/components/receipt-slip";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { loadHomeReceipt } from "@/app/home-data";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Method — Called",
@@ -38,16 +41,17 @@ const STEPS = [
   },
 ];
 
-export default function MethodPage() {
+export default async function MethodPage() {
+  const receipt = await loadHomeReceipt();
   return (
     <>
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1180px] px-6 py-16">
-        <p className="font-mono text-xs uppercase tracking-wider text-seal">
+      <main className="wrap section">
+        <p className="kicker">
           Method
         </p>
-        <h1 className="mt-3 max-w-[720px] font-display text-5xl font-bold leading-tight text-bone">
+        <h1 className="page-title">
           What happens between a question and a score
         </h1>
         <p className="mt-5 max-w-[620px] text-lg text-mute">
@@ -73,17 +77,29 @@ export default function MethodPage() {
           </ol>
 
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ReceiptSlip
-              rows={[
-                { label: "RECEIPT", value: "rcpt-seal-4-0000abcd" },
-                { label: "RECORD", value: "#4" },
-                { label: "COMMIT", value: "9f2c…d41a" },
-                { label: "PROBABILITY", value: "68%" },
-                { label: "SEALED", value: "2026-09-26T09:41:07Z" },
-              ]}
-              stamp="SAMPLE, NOT A REAL RECEIPT"
-              note="A real receipt is signed with Ed25519 and can be checked offline with the public key at /.well-known/called-receipt-key. It carries the salt that reveals the sealed probability."
-            />
+            {receipt ? (
+              <ReceiptSlip
+                rows={[
+                  { label: "RECEIPT", value: receipt.receiptId },
+                  { label: "RECORD", value: `#${receipt.recordIndex}` },
+                  { label: "RECORD HASH", value: receipt.chainHash },
+                  {
+                    label: "PROBABILITY",
+                    value:
+                      receipt.probability === null
+                        ? "sealed"
+                        : `${receipt.probability}%`,
+                  },
+                  { label: "SEALED", value: receipt.sealedAt },
+                ]}
+                stamp={receipt.anchorStatus}
+                note="This receipt is signed with Ed25519 and can be checked offline with the public key at /.well-known/called-receipt-key."
+              />
+            ) : (
+              <div className="panel p-6 text-mute">
+                No receipt exists yet. A signed receipt appears after a forecast is sealed.
+              </div>
+            )}
           </div>
         </div>
 

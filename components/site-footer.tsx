@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const FOOTER_NAV = [
@@ -9,27 +8,24 @@ const FOOTER_NAV = [
   ["/faq", "FAQ"],
   ["/agents", "Agents"],
   ["/me", "Me"],
+  ["/third-party", "Third-party notices"],
 ] as const;
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto w-full max-w-[1180px] px-6 py-16">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/called-logo.png"
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-12"
-          />
-          <p className="font-display text-4xl font-bold text-bone">Called</p>
+      <div className="wrap py-16">
+        <div className="flex flex-wrap items-start justify-between gap-x-10 gap-y-4">
+          <p className="site-footer-wordmark text-bone">Called</p>
+          <p className="max-w-[420px] pt-2 text-lg text-mute">
+            Forecasts, sealed in public. Settled from a readable source.
+          </p>
         </div>
-        <p className="mt-3 max-w-[420px] text-lg text-mute">
-          Forecasts, sealed in public. Settled from a readable source.
-        </p>
 
-        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+        <nav
+          aria-label="Footer"
+          className="mt-8 flex flex-wrap gap-x-6 gap-y-2"
+        >
           {FOOTER_NAV.map(([href, label]) => (
             <Link
               key={href}
@@ -39,19 +35,28 @@ export function SiteFooter() {
               {label}
             </Link>
           ))}
-        </div>
+        </nav>
 
-        <p className="mt-8 border-t border-line pt-6 font-mono text-xs text-mute">
-          Scoring adapted from{" "}
-          <a
-            href="https://github.com/Noisyxl/brier"
-            className="text-bone hover:text-seal"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            brier
-          </a>{" "}
-          (MIT). See THIRD_PARTY.md.
+        <p className="mt-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-line pt-6 font-mono text-xs text-mute">
+          <span>
+            Scoring adapted from{" "}
+            <a
+              href="https://github.com/Noisyxl/brier"
+              className="text-bone hover:text-seal"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              brier
+            </a>{" "}
+            (MIT).
+          </span>
+          <span>
+            Read the full attribution on{" "}
+            <Link href="/third-party" className="text-bone hover:text-seal">
+              Third-party notices
+            </Link>
+            .
+          </span>
         </p>
       </div>
     </footer>

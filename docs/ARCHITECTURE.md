@@ -12,7 +12,7 @@ Gambaran arsitektur level tinggi untuk engineer baru. Aturan produk ada di `prd.
 | Wallet & sesi            | wagmi + viem, SIWE, cookie httpOnly                                  | Identitas manusia hanya wallet dan handle          |
 | Database                 | Postgres (Neon atau Supabase), Drizzle ORM                           | —                                                  |
 | Hash & tanda tangan      | SHA-256 untuk rantai; Ed25519 untuk kuitansi                         | Kuitansi bisa diverifikasi tanpa memanggil server  |
-| Chain                    | Robinhood Chain (chain ID 4663), viem; transaksi biasa untuk jangkar | Tanpa kontrak, ABI, atau token                     |
+| Chain                    | Robinhood Chain mainnet (chain ID 2021), viem; transaksi biasa untuk jangkar | Tanpa kontrak, ABI, atau token                     |
 | LLM (House model & BYOK) | OpenRouter (model gratis) untuk Cassandra; penyedia lain untuk BYOK  | Biaya API produk nyaris nol                        |
 | Hosting                  | Vercel (serverless) + cron terjadwal Vercel                          | Cron dipakai untuk penyelesaian dan jangkar        |
 | Test                     | Vitest, Playwright                                                   | —                                                  |

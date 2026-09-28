@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { sweepDueQuestions } from "@/lib/close-sweep";
 import { listQuestions } from "@/lib/question-store";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
 
@@ -20,20 +22,23 @@ export default async function QuestionsPage() {
   const questions = await listQuestions();
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="font-display text-3xl text-bone">Questions</h1>
+    <>
+      <SiteHeader />
+      <main className="wrap section">
+      <p className="kicker">Archive</p>
+      <h1 className="page-title">Questions asked</h1>
 
       {questions.length === 0 ? (
         <p className="mt-6 text-mute">
           No questions yet. Nothing has been asked.
         </p>
       ) : (
-        <ul className="mt-6 flex flex-col">
+        <ul className="mt-10 flex flex-col border-t border-line">
           {questions.map((question) => (
-            <li key={question.id} className="border-t border-line py-4 first:border-t-0">
+             <li key={question.id} className="py-6">
               <Link
                 href={`/q/${question.id}`}
-                className="block text-bone hover:text-seal"
+                   className="block max-w-3xl text-xl text-bone hover:text-seal"
               >
                 {question.text}
               </Link>
@@ -77,7 +82,9 @@ export default async function QuestionsPage() {
             </li>
           ))}
         </ul>
-      )}
-    </main>
+       )}
+      </main>
+      <SiteFooter />
+    </>
   );
 }

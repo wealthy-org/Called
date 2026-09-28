@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { LeaderboardSection } from "./leaderboard-section";
 import { CalibrationPanel } from "./calibration-panel";
 import { loadLeaderboardPage } from "./data";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "Leaderboard — Called",
@@ -13,7 +15,14 @@ export default async function LeaderboardPage() {
   const data = await loadLeaderboardPage();
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4">
+    <>
+      <SiteHeader />
+    <main className="wrap section">
+      <p className="kicker">Scoring</p>
+      <h1 className="page-title">Leaderboard</h1>
+      <p className="mt-5 max-w-[620px] text-lg text-mute">
+        Ranked forecasts use settled questions only. Provisional forecasts stay visible without entering ranking.
+      </p>
       <div className="lg:grid lg:grid-cols-[1.35fr_1fr] lg:gap-11">
         <div>
           <LeaderboardSection />
@@ -30,5 +39,7 @@ export default async function LeaderboardPage() {
         success or failure.
       </section>
     </main>
+    <SiteFooter />
+    </>
   );
 }

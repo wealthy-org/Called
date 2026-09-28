@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { SignInModal } from "@/components/sign-in-modal";
 
 export const AGENT_SELF_RUN_LABEL = "Agent (self-run)";
 
@@ -102,6 +103,7 @@ export default function AgentsPage() {
   const [runResult, setRunResult] = useState<RunResult | null>(null);
 
   const [reloadKey, setReloadKey] = useState(0);
+  const [signInOpen, setSignInOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +115,9 @@ export default function AgentsPage() {
           return;
         }
         if (!response.ok) {
+          if (response.status === 401) {
+            setSignInOpen(true);
+          }
           setLoadState("error");
           setLoadError(
             readString(body, "error") ||
@@ -157,6 +162,9 @@ export default function AgentsPage() {
       });
       const body: unknown = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          setSignInOpen(true);
+        }
         setRegisterStatus("idle");
         setRegisterError(
           readString(body, "error") ||
@@ -189,6 +197,9 @@ export default function AgentsPage() {
       });
       const body: unknown = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          setSignInOpen(true);
+        }
         setRunStatus("idle");
         setRunError(
           readString(body, "error") ||
@@ -462,6 +473,11 @@ export default function AgentsPage() {
           call on your provider.
         </p>
       </section>
+      <SignInModal
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        onSignedIn={reload}
+      />
     </main>
-  );
+    );
 }

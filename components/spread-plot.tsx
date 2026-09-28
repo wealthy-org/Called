@@ -10,112 +10,125 @@ export interface SpreadPlotProps {
   className?: string;
 }
 
-const PAD_X = 8;
-const MARKER_ABOVE_Y = 46;
-const MARKER_BELOW_Y = 104;
-const AXIS_Y = 76;
-const PLOT_HEIGHT = 190;
-
-function clampPercent(p: number): number {
-  if (!Number.isFinite(p)) {
-    return 0;
-  }
-  return Math.min(1, Math.max(0, p));
+interface MarkerLayout {
+  forecast: SpreadForecast;
+  left: number;
+  lane: "up" | "down";
+  offset: number;
 }
 
-export function spreadSummary(
-  forecasts: SpreadForecast[],
-  outcome: boolean,
-): string {
-  if (forecasts.length === 0) {
-    return `No forecasters to plot. Outcome ${outcome ? "YES" : "NO"}.`;
-  }
-  const parts = forecasts
-    .map((f) => `${f.label} said ${(clampPercent(f.p) * 100).toFixed(0)}%`)
-    .join("; ");
-  return `Spread of ${forecasts.length} forecasters. ${parts}. Outcome ${
-    outcome ? "YES" : "NO"
-  } at 100%.`;
+const LABEL_WIDTH_PER_CHARACTER = 7.2;
+const PLOT_WIDTH_PX = 650;
+const PADDING_PX = 8;
+const OUTCOME_LABEL = "outcome";
+const UP = 0;
+const DOWN = 1;
+const OUTCOME_STACK_OFFSET = 22;
+
+function clampPercent(p: number): number {
+  return Number.isFinite(p) ? Math.min(1, Math.max(0, p)) : 0;
+}
+
+function labelWidth(label: string): number {
+  return Math.max(20, label.length * LABEL_WIDTH_PER_CHARACTER);
+}
+
+function percentToPx(left: number): number {
+  return (left / 100) * (PLOT_WIDTH_PX - PADDING_PX * 2) + PADDING_PX;
+}
+
+function overlaps(a: MarkerLayout, b: MarkerLayout): boolean {
+  return Math.abs(percentToPx(a.left) - percentToPx(b.left)) <
+    labelWidth(a.forecast.label) / 2 + labelWidth(b.forecast.label) / 2 + PADDING_PX;
+}
+
+export function layoutSpreadMarkers(forecasts: SpreadForecast[]): MarkerLayout[] {
+  const sorted = forecasts
+    .map((forecast, index) => ({ forecast, index }))
+    .sort((a, b) => clampPercent(a.forecast.p) - clampPercent(b.forecast.p) || a.index - b.index);
+  const lanes: MarkerLayout[][] = [[], []];
+  // Reserve the real outcome text width at 100% in the down lane. The outcome
+  // label is right-anchored so its text extends left from the edge; center the
+  // synthetic slot over that real extent. Forecast labels overlapping this
+  // zone are forced into the up lane, never stacked inside the outcome band.
+  const outcomeSlot: MarkerLayout = {
+    forecast: { id: "__outcome__", label: OUTCOME_LABEL, p: 1 },
+    left:
+      100 -
+      (labelWidth(OUTCOME_LABEL) / 2 / (PLOT_WIDTH_PX - PADDING_PX * 2)) * 100,
+    lane: "down",
+    offset: 0,
+  };
+  lanes[DOWN].push(outcomeSlot);
+
+  const collidesWithOutcome = (candidate: MarkerLayout): boolean => overlaps(candidate, outcomeSlot);
+
+  const markers = sorted.map(({ forecast, index }) => {
+    const left = clampPercent(forecast.p) * 100;
+    const preferred = index % 2;
+    const alternate = preferred === UP ? DOWN : UP;
+    let laneIndex = preferred;
+    let offset = 0;
+    let candidate: MarkerLayout = { forecast, left, lane: preferred === UP ? "up" : "down", offset };
+
+    if (collidesWithOutcome(candidate)) {
+      // Never share the outcome band: up lane only, stacking offsets there.
+      laneIndex = UP;
+      candidate = { ...candidate, lane: "up" };
+      offset = lanes[UP].filter((marker) => overlaps(candidate, marker)).length * OUTCOME_STACK_OFFSET;
+      candidate = { ...candidate, offset };
+    } else if (lanes[preferred].some((marker) => overlaps(candidate, marker))) {
+      const alternateCandidate: MarkerLayout = { ...candidate, lane: alternate === UP ? "up" : "down" };
+      if (!lanes[alternate].some((marker) => overlaps(alternateCandidate, marker))) {
+        laneIndex = alternate;
+        candidate = alternateCandidate;
+      } else {
+        offset = lanes[preferred].filter((marker) => overlaps(candidate, marker)).length * OUTCOME_STACK_OFFSET;
+        candidate = { ...candidate, offset };
+      }
+    }
+
+    const marker: MarkerLayout = {
+      forecast,
+      left,
+      lane: laneIndex === UP ? "up" : "down",
+      offset,
+    };
+    lanes[laneIndex].push(marker);
+    return marker;
+  });
+
+  return markers;
+}
+
+export function spreadSummary(forecasts: SpreadForecast[], outcome: boolean): string {
+  if (forecasts.length === 0) return `No forecasters to plot. Outcome ${outcome ? "YES" : "NO"}.`;
+  const parts = forecasts.map((f) => `${f.label} said ${(clampPercent(f.p) * 100).toFixed(0)}%`).join("; ");
+  return `Spread of ${forecasts.length} forecasters. ${parts}. Outcome ${outcome ? "YES" : "NO"} at 100%.`;
 }
 
 export function SpreadPlot({ forecasts, outcome, className }: SpreadPlotProps) {
-  const label = spreadSummary(forecasts, outcome);
-
+  const markers = layoutSpreadMarkers(forecasts);
   return (
-    <figure className={className}>
-      <svg
-        role="img"
-        aria-label={label}
-        viewBox={`0 0 360 ${PLOT_HEIGHT}`}
-        className="h-[190px] w-full"
-        preserveAspectRatio="none"
-      >
-        <line
-          x1={PAD_X}
-          y1={AXIS_Y}
-          x2={360 - PAD_X}
-          y2={AXIS_Y}
-          stroke="var(--bone)"
-          strokeWidth={1}
-        />
-        {[0, 0.5, 1].map((tick) => {
-          const x = PAD_X + tick * (360 - PAD_X * 2);
-          return (
-            <text
-              key={tick}
-              x={x}
-              y={AXIS_Y + 18}
-              textAnchor="middle"
-              className="fill-mute font-mono text-[11.5px]"
-            >
-              {tick * 100}%
-            </text>
-          );
-        })}
-
-        {forecasts.map((forecast, index) => {
-          const x = PAD_X + clampPercent(forecast.p) * (360 - PAD_X * 2);
-          const above = index % 2 === 0;
-          const y = above ? MARKER_ABOVE_Y : MARKER_BELOW_Y;
-          return (
-            <g key={forecast.id}>
-              <rect
-                x={x - 5}
-                y={y - 5}
-                width={10}
-                height={10}
-                fill="var(--bone)"
-              />
-              <text
-                x={x}
-                y={above ? y - 12 : y + 20}
-                textAnchor="middle"
-                className="fill-mute font-mono text-[12px]"
-              >
-                {forecast.label}
-              </text>
-            </g>
-          );
-        })}
-
-        <g>
-          <rect
-            x={360 - PAD_X - 10}
-            y={AXIS_Y - 5}
-            width={10}
-            height={10}
-            fill="var(--seal)"
-          />
-          <text
-            x={360 - PAD_X}
-            y={AXIS_Y - 14}
-            textAnchor="end"
-            className="fill-seal font-mono text-[12px]"
-          >
-            {outcome ? "YES" : "NO"}
-          </text>
-        </g>
-      </svg>
+    <figure className={`spread ${className ?? ""}`} role="img" aria-label={spreadSummary(forecasts, outcome)}>
+      <div className="axis" aria-hidden="true" />
+      {[0, 50, 100].map((tick) => <span key={`tick-${tick}`} className="tick" style={{ left: `${tick}%` }} aria-hidden="true" />)}
+      {[0, 50, 100].map((tick) => <span key={`label-${tick}`} className="tl" style={{ left: `${tick}%` }} aria-hidden="true">{tick}%</span>)}
+      {markers.map((marker) => (
+        <span
+          key={marker.forecast.id}
+          className={`mk ${marker.lane}`}
+          style={{
+            left: `${marker.left}%`,
+            marginTop: marker.lane === "up" ? -marker.offset : marker.offset,
+          }}
+        >
+          <i aria-hidden="true" />
+          <span>{marker.forecast.label}</span>
+          <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+        </span>
+      ))}
+      <span className="mk dn out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
     </figure>
   );
 }

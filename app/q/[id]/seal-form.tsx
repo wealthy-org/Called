@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { newSalt } from "@/lib/crypto-box";
 import { ReceiptBlock, type SealedReceiptData } from "./receipt-slip";
+import { SignInModal } from "@/components/sign-in-modal";
 
 export const MIN_PERCENT = 1;
 export const MAX_PERCENT = 99;
@@ -36,6 +37,7 @@ export function SealForm({ questionId }: { questionId: string }) {
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [sealed, setSealed] = useState<SealedReceiptData | null>(null);
+  const [signInOpen, setSignInOpen] = useState(false);
 
   async function submit() {
     setStatus("sending");
@@ -62,6 +64,10 @@ export function SealForm({ questionId }: { questionId: string }) {
           readString(body, "error") ||
           `seal failed with status ${response.status}`;
         setStatus("idle");
+        if (response.status === 401) {
+          setSignInOpen(true);
+          return;
+        }
         setError(message);
         return;
       }
@@ -85,6 +91,7 @@ export function SealForm({ questionId }: { questionId: string }) {
   }
 
   return (
+    <>
     <div className="flex flex-col gap-4">
       <div>
         <label
@@ -144,5 +151,7 @@ export function SealForm({ questionId }: { questionId: string }) {
         </p>
       ) : null}
     </div>
+    <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
+    </>
   );
 }

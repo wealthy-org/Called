@@ -22,14 +22,14 @@ const fields: SiweMessageFields = {
   statement: "Sign in to Called.",
   uri: "https://called.finance",
   version: "1",
-  chainId: 4663,
+  chainId: 2021,
   nonce: "0123456789abcdef0123456789abcdef",
   issuedAt: new Date().toISOString(),
 };
 
 const expected = {
   expectedNonce: fields.nonce,
-  expectedChainId: 4663,
+  expectedChainId: 2021,
   expectedDomain: "called.finance",
   expectedUri: "https://called.finance",
 };
@@ -52,7 +52,7 @@ describe("buildSiweMessage", () => {
     expect(lines[1]).toBe(account.address);
     expect(lines[3]).toBe(fields.statement);
     expect(message).toContain("Version: 1");
-    expect(message).toContain("Chain ID: 4663");
+    expect(message).toContain("Chain ID: 2021");
     expect(message).toContain(`Nonce: ${fields.nonce}`);
   });
 

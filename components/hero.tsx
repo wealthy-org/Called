@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ROBINHOOD_CHAIN_ID } from "@/lib/env";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -24,13 +24,10 @@ const DOT_DRAG_MOMENTUM = 0.28;
 const DOT_SPRING = 0.04;
 const DOT_DAMPING = 0.86;
 const DOT_COLOR_FULL_PX = 60;
+const TITLE_LINES = ["Say it before", "it happens."] as const;
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
-}
-
-function hexChar(): string {
-  return HEX.charAt(Math.floor(Math.random() * HEX.length));
 }
 
 function readFontStack(cssVariable: string, fallback: string): string {
@@ -64,7 +61,7 @@ function useHorizonCanvas(reduced: boolean) {
       y: number;
       size: number;
       alpha: number;
-      char: string;
+      charIndex: number;
     }
     let cells: Cell[] = [];
     let width = 0;
@@ -74,7 +71,7 @@ function useHorizonCanvas(reduced: boolean) {
       if (canvas === null) {
         return;
       }
-      const ratio = window.devicePixelRatio || 1;
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
       width = canvas.clientWidth;
       height = canvas.clientHeight;
       canvas.width = Math.floor(width * ratio);
@@ -87,33 +84,42 @@ function useHorizonCanvas(reduced: boolean) {
       const ridge = height * 0.8;
       for (let y = CELL / 2; y < height; y += CELL) {
         for (let x = CELL / 2; x < width; x += CELL) {
-          const wave = Math.sin((x / width) * Math.PI * 3) * CELL * 0.5;
-          const ridgeY = ridge + wave;
-          const below = y >= ridgeY;
-          const depth = clamp((y - ridgeY) / (height - ridgeY || 1), 0, 1);
-          const skyProbability = 0.06;
-          if (!below && Math.random() > skyProbability) {
+          const ridgeY = ridge +
+            Math.sin(x * 0.0045) * height * 0.045 +
+            Math.sin(x * 0.012) * height * 0.018;
+          const distance = y - ridgeY;
+          const band = height * 0.055;
+          const density = distance >= 0 ? 1 : 0.035;
+          if (Math.random() > density || Math.abs(distance) > band * 3) {
             continue;
           }
-          const alpha = below ? clamp(1 - depth * 1.15, 0, 1) * 0.7 : 0.18;
+          const depth = clamp(distance / (height - ridgeY || 1), 0, 1);
+          const alpha = clamp(0.92 * Math.exp(-Math.abs(distance) / band), 0, 0.92) *
+            (distance > 0 ? 1 - depth * 0.78 : 0.7);
           if (alpha <= 0.02) {
             continue;
           }
           cells.push({
             x,
             y,
-            size: 12 + depth * 10,
+            size: 12 + clamp(distance / band, 0, 1) * 10,
             alpha,
-            char: hexChar(),
+            charIndex: Math.floor(Math.random() * HEX.length),
           });
         }
       }
     }
 
-    function paint() {
+    function paint(now = performance.now()) {
       context!.clearRect(0, 0, width, height);
       for (const cell of cells) {
-        let alpha = cell.alpha;
+        const ridgeY = height * 0.8 +
+          Math.sin(cell.x * 0.0045 + now * 0.00012) * height * 0.045 +
+          Math.sin(cell.x * 0.012 - now * 0.00007) * height * 0.018;
+        const distance = cell.y - ridgeY;
+        const band = height * 0.055;
+        let alpha = clamp(0.92 * Math.exp(-Math.abs(distance) / band), 0, 0.92) *
+          (distance > 0 ? 1 - clamp(distance / (height - ridgeY || 1), 0, 1) * 0.78 : 0.7);
         if (pointer.active) {
           const dx = cell.x - pointer.x;
           const dy = cell.y - pointer.y;
@@ -123,8 +129,12 @@ function useHorizonCanvas(reduced: boolean) {
           }
         }
         context!.font = `500 ${cell.size}px ${monoStack}, monospace`;
-        context!.fillStyle = `rgba(161,157,149,${alpha})`;
-        context!.fillText(cell.char, cell.x, cell.y);
+        const nearRidge = clamp(1 - Math.abs(distance) / (band * 3), 0, 1);
+        const red = Math.round(161 + (236 - 161) * nearRidge * 0.7);
+        const green = Math.round(157 + (233 - 157) * nearRidge * 0.7);
+        const blue = Math.round(149 + (228 - 149) * nearRidge * 0.7);
+        context!.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
+        context!.fillText(HEX.charAt(cell.charIndex), cell.x, cell.y);
       }
     }
 
@@ -145,11 +155,12 @@ function useHorizonCanvas(reduced: boolean) {
         for (let i = 0; i < changes; i += 1) {
           const cell = cells[Math.floor(Math.random() * cells.length)];
           if (cell) {
-            cell.char = hexChar();
+            const advance = 1 + Math.floor(Math.random() * 3);
+            cell.charIndex = (cell.charIndex + advance) % HEX.length;
           }
         }
       }
-      paint();
+      paint(now);
       if (running) {
         frame = requestAnimationFrame(step);
       }
@@ -171,13 +182,13 @@ function useHorizonCanvas(reduced: boolean) {
       pointer.active = false;
     }
 
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerleave", onPointerLeave);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener("resize", build);
 
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        if (reduced) {
+        if (reduced || document.hidden) {
           continue;
         }
         if (entry.isIntersecting && !running) {
@@ -196,8 +207,8 @@ function useHorizonCanvas(reduced: boolean) {
       running = false;
       cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerleave", onPointerLeave);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener("resize", build);
     };
   }, [reduced]);
@@ -214,7 +225,7 @@ interface DotParticle {
   vy: number;
 }
 
-function useDotTitleCanvas(reduced: boolean, text: string) {
+function useDotTitleCanvas(reduced: boolean, lines: readonly string[]) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -232,8 +243,6 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
     let radius = 1.8;
     let width = 0;
     let height = 0;
-    const displayStack = readFontStack("--font-doto", "sans-serif");
-
     function build() {
       if (canvas === null) {
         return;
@@ -245,7 +254,15 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
       canvas.height = Math.floor(height * ratio);
       context!.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      const fontPx = Math.min(width / (text.length * 0.62), height * 0.86);
+      let fontPx = Math.min(140, width / 8.6);
+      const widestLine = Math.max(...lines.map((line) => line.length));
+      if (widestLine * fontPx * 0.6 > width * 0.98) {
+        fontPx = (width * 0.98) / (widestLine * 0.6);
+      }
+      height = Math.max(220, Math.ceil(fontPx * 2.04));
+      canvas.height = Math.floor(height * ratio);
+      canvas.style.height = `${height}px`;
+      context!.setTransform(ratio, 0, 0, ratio, 0, 0);
       step = Math.max(3, 2, fontPx * DOT_STEP_RATIO);
       radius = step * DOT_RADIUS_RATIO;
 
@@ -257,17 +274,21 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
         return;
       }
       off.fillStyle = "#fff";
-      off.font = `700 ${fontPx}px ${displayStack}, sans-serif`;
+      off.font = `600 ${fontPx}px ${readFontStack("--font-plex-mono", "monospace")}, monospace`;
       off.textAlign = "center";
       off.textBaseline = "middle";
-      off.fillText(text, width / 2, height / 2);
+      const lineHeight = fontPx * 1.02;
+      const firstY = height / 2 - lineHeight / 2;
+      lines.forEach((line, index) => {
+        off.fillText(line, width / 2, firstY + index * lineHeight);
+      });
 
       const data = off.getImageData(0, 0, width, height).data;
       particles = [];
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           const index = (Math.floor(y) * width + Math.floor(x)) * 4 + 3;
-          if (data[index] > 128) {
+          if (data[index] > 110) {
             particles.push({
               homeX: x,
               homeY: y,
@@ -299,7 +320,7 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
     }
 
     function tick() {
-      const fontPx = Math.min(width / (text.length * 0.62), height * 0.86);
+      const fontPx = Math.min(140, width / 8.6);
       const pushRadius = Math.max(60, fontPx * 0.85);
       for (const particle of particles) {
         if (pointer.active) {
@@ -397,10 +418,10 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
     });
     observer.observe(canvas);
 
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("pointerup", onPointerUp);
-    window.addEventListener("pointerleave", onPointerLeave);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointerleave", onPointerLeave);
     window.addEventListener("resize", build);
 
     return () => {
@@ -408,13 +429,13 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
       running = false;
       cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointerleave", onPointerLeave);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
       window.removeEventListener("resize", build);
     };
-  }, [reduced, text]);
+  }, [lines, reduced]);
 
   return canvasRef;
 }
@@ -422,15 +443,14 @@ function useDotTitleCanvas(reduced: boolean, text: string) {
 export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
   const reduced = useReducedMotion();
   const horizonRef = useHorizonCanvas(reduced);
-  const titleRef = useDotTitleCanvas(reduced, "Say it before it happens.");
-  const [tickerPaused, setTickerPaused] = useState(false);
+  const titleRef = useDotTitleCanvas(reduced, TITLE_LINES);
 
   const head = headHash ?? "no records yet";
 
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative flex min-h-[min(94vh,860px)] flex-col justify-center overflow-hidden border-b border-line"
+      className="hero relative flex min-h-[min(94vh,860px)] flex-col justify-center overflow-hidden border-b border-line"
     >
       <canvas
         ref={horizonRef}
@@ -442,25 +462,25 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
         className="pointer-events-none absolute inset-0 [background:radial-gradient(62%_46%_at_50%_36%,rgba(10,10,11,0.96),rgba(10,10,11,0.84)_60%,rgba(10,10,11,0)_100%)]"
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-col items-center px-6 py-24 text-center">
+      <div className="wrap relative z-10 flex w-full flex-col items-center px-6 py-24 text-center">
         <h1 id="hero-title" className="sr-only">
           Say it before it happens.
         </h1>
         <canvas
           ref={titleRef}
           aria-hidden="true"
-          className="h-[220px] w-full max-w-[880px] cursor-crosshair touch-pan-y"
+          className="title-cv w-full max-w-[880px] cursor-crosshair touch-pan-y"
         />
-        <p className="mt-2 font-mono text-[13.5px] text-mute">
+        <p className="drag-hint mt-2 font-mono text-[13.5px] text-mute">
           Move or drag through the dots.
         </p>
 
-        <p className="mt-10 max-w-[560px] text-lg text-mute">
+        <p className="lede mt-10 max-w-[560px] text-lg text-mute">
           Forecasts sealed in public before the outcome exists, settled from a
           readable source, and provable only once anchored on-chain.
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <div className="cta mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="#question"
             className="inline-flex min-h-[46px] items-center rounded-field bg-seal px-6 text-[15px] font-semibold text-void hover:bg-bone"
@@ -476,8 +496,8 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
         </div>
       </div>
 
-      <div className="relative z-10 border-t border-line bg-void">
-        <div className="mx-auto flex w-full max-w-[1180px] items-center gap-4 px-6 py-3">
+      <div className="hero-foot relative z-10 border-t border-line bg-void">
+        <div className="wrap flex w-full items-center gap-4 px-6 py-3">
           <div
             aria-hidden="true"
             className="min-w-0 flex-1 overflow-hidden"
@@ -486,11 +506,7 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
                 "linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent)",
             }}
           >
-            <div
-              className={`inline-flex whitespace-nowrap font-mono text-xs ${
-                tickerPaused ? "" : "ticker-track"
-              }`}
-            >
+             <div className="marq-track ticker-track inline-flex whitespace-nowrap font-mono text-xs">
               {[0, 1].map((copy) => (
                 <span key={copy} className="pr-16">
                   <span className="text-mute">Session head </span>
@@ -509,14 +525,6 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
               ))}
             </div>
           </div>
-          <button
-            type="button"
-            aria-pressed={tickerPaused}
-            onClick={() => setTickerPaused((value) => !value)}
-            className="min-h-11 min-w-[72px] rounded-field border border-line px-3 font-mono text-xs uppercase text-mute hover:text-bone"
-          >
-            {tickerPaused ? "Play" : "Pause"}
-          </button>
         </div>
         <p aria-live="polite" className="sr-only">
           Session head {head}, {recordCount} records, anchor status {anchorStatus}.

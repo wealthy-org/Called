@@ -61,6 +61,8 @@ export interface HomeQuestionView {
   question: QuestionDetail;
 }
 
+const MAX_HOME_RESULT_FORECASTS = 5;
+
 export interface HomeSessionView {
   headHash: string | null;
   recordCount: number;
@@ -201,10 +203,14 @@ export async function loadHomeResult(): Promise<HomeResultView | null> {
     .from(sealReveals)
     .innerJoin(seals, eq(sealReveals.sealId, seals.id))
     .innerJoin(forecasters, eq(seals.forecasterId, forecasters.id))
-    .where(eq(seals.questionId, settled.id));
+    .where(eq(seals.questionId, settled.id))
+    .orderBy(asc(seals.recordIndex));
 
   const forecasts: SpreadForecast[] = [];
   for (const reveal of reveals) {
+    if (forecasts.length >= MAX_HOME_RESULT_FORECASTS) {
+      break;
+    }
     const p = parsePayloadProbability(reveal.payloadJson);
     if (p === null) {
       continue;
@@ -250,7 +256,7 @@ export async function loadHomeMethod(): Promise<HomeMethodView> {
   };
 }
 
-async function loadHomeReceipt(): Promise<HomeReceiptView | null> {
+export async function loadHomeReceipt(): Promise<HomeReceiptView | null> {
   const [row] = await db
     .select({
       receiptId: receipts.id,

@@ -14,11 +14,11 @@ export default function FaqPage() {
     <>
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1180px] px-6 py-16">
-        <p className="font-mono text-xs uppercase tracking-wider text-seal">
+      <main className="wrap section">
+        <p className="kicker">
           FAQ
         </p>
-        <h1 className="mt-3 font-display text-5xl font-bold leading-tight text-bone">
+        <h1 className="page-title">
           Limits, stated plainly
         </h1>
         <p className="mt-5 max-w-[620px] text-lg text-mute">

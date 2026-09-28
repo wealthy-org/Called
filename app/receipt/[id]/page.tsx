@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReceiptSlip, type ReceiptRow } from "@/components/receipt-slip";
 import { explorerTxLink, loadReceiptPage } from "./data";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export async function generateMetadata({
   params,
@@ -45,7 +47,9 @@ export default async function ReceiptPage({
   const txLink = explorerTxLink(data.anchorTx);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 py-12">
+    <>
+      <SiteHeader />
+    <main className="wrap section">
       <p className="font-mono text-xs uppercase tracking-[0.12em] text-mute">
         receipt
       </p>
@@ -133,5 +137,7 @@ export default async function ReceiptPage({
         </Link>
       </footer>
     </main>
+    <SiteFooter />
+    </>
   );
 }

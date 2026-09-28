@@ -15,7 +15,7 @@ const complete = {
   SESSION_SECRET: "session-secret",
   ADMIN_WALLETS: "0xAAA,0xbbb",
   CRON_SECRET: "cron-secret",
-  ROBINHOOD_RPC_URL: "https://rpc.test/chain-4663",
+  ROBINHOOD_RPC_URL: "https://rpc.test/chain-2021",
   ANCHOR_PRIVATE_KEY: "0xanchor",
   PAYLOAD_ENCRYPTION_KEY: "payload-encryption-key",
   HOUSE_TEMPERATURE: "0",
@@ -94,7 +94,7 @@ describe("isAdmin", () => {
 });
 
 describe("ROBINHOOD_CHAIN_ID", () => {
-  it("is 4663", () => {
-    expect(ROBINHOOD_CHAIN_ID).toBe(4663);
+  it("is 2021", () => {
+    expect(ROBINHOOD_CHAIN_ID).toBe(2021);
   });
 });

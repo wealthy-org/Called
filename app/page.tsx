@@ -54,7 +54,7 @@ export default async function Home() {
           .sort((a, b) => a.brier - b.brier);
 
   return (
-    <>
+    <div className="home-page">
       <RevealObserver />
       <SiteHeader variant="landing" />
 
@@ -79,10 +79,6 @@ export default async function Home() {
       </Section>
 
       <Section id="result" index={1}>
-        <SectionHeader
-          title="Result"
-          body="When the source reports a number, the test settles the question. Every forecaster is plotted at the probability they sealed."
-        />
         {result === null ? (
           <Empty>
             No settled questions yet. Results appear here once a question is
@@ -90,12 +86,13 @@ export default async function Home() {
           </Empty>
         ) : (
           <>
-            <div className="grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
-              <div>
-                <p className="font-display text-[clamp(96px,17vw,230px)] leading-[0.82] font-black text-bone">
+             <div className="rgrid grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
+               <div>
+                 <p className="kicker">AFTER SETTLEMENT</p>
+                 <p className="verdict font-display text-[clamp(96px,17vw,230px)] leading-[0.82] font-black text-bone">
                   {result.outcome ? "YES" : "NO"}
                 </p>
-                <p className="mt-4 max-w-[360px] text-mute">
+                 <p className="vsub mt-4 max-w-[360px] text-mute">
                   {result.questionText}
                 </p>
                 {result.readingValue !== null ? (
@@ -104,12 +101,14 @@ export default async function Home() {
                   </p>
                 ) : null}
               </div>
-              <SpreadPlot forecasts={result.forecasts} outcome={result.outcome} />
-            </div>
-
-            {scored.length > 0 && (
-              <div className="mt-14 overflow-x-auto">
-                <table className="w-full border-collapse text-left">
+               <div>
+                 <p className="result-explanation max-w-[520px] text-mute">
+                   When the source reports a number, the test settles the question. Every forecaster is plotted at the probability they sealed.
+                 </p>
+                 <SpreadPlot forecasts={result.forecasts} outcome={result.outcome} />
+             {scored.length > 0 && (
+                 <div className="scores-wrap overflow-x-auto">
+                 <table className="scores w-full border-collapse text-left">
                   <caption className="sr-only">
                     Each forecaster&apos;s Brier score on this question
                   </caption>
@@ -135,9 +134,9 @@ export default async function Home() {
                         </td>
                         <td className="py-3">
                           <div
-                            className="h-1.5 rounded-sm bg-bone"
+                             className="score-bar"
                             style={{
-                              width: `${Math.max(2, (1 - row.brier) * 50)}%`,
+                               width: `${Math.max(2, (1 - row.brier) * 100)}%`,
                             }}
                           />
                         </td>
@@ -145,23 +144,25 @@ export default async function Home() {
                     ))}
                   </tbody>
                 </table>
-                <p className="pt-4 max-w-[560px] text-[13.5px] text-mute">
+                 <p className="paper-note pt-4 max-w-[420px] text-[13.5px] text-mute">
                   Brier score for one question is (forecast minus outcome)
                   squared. Lower is better. One question proves nothing, which
                   is why every score on the leaderboard carries its n.
                 </p>
-              </div>
-            )}
+               </div>
+             )}
+               </div>
+             </div>
           </>
         )}
       </Section>
 
-      <Section id="ledger" index={2} tone="ink">
-        <div className="mb-8">
+       <Section id="ledger" index={2} tone="ink">
+         <div className="ledger-head mb-8">
           <p className="font-mono text-xs uppercase tracking-[0.12em] text-mute">
             The ledger
           </p>
-          <h2 className="mt-3 font-display text-[clamp(40px,7.4vw,104px)] leading-none font-black tracking-tight text-bone">
+           <h2 className="title mt-3 font-display text-[clamp(40px,7.4vw,104px)] leading-none font-black tracking-tight text-bone">
             A chain you can break.
           </h2>
           <p className="mt-4 max-w-[560px] text-mute">
@@ -171,7 +172,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
+         <div className="actions flex flex-wrap items-center gap-4">
           <VerifyButton records={ledger.records} />
           <Link
             href="/ledger"
@@ -186,7 +187,7 @@ export default async function Home() {
             Nothing has been sealed yet. The first seal starts the chain.
           </Empty>
         ) : (
-          <div className="mt-6 overflow-x-auto rounded-panel border border-line">
+           <div className="tablewrap mt-6 overflow-x-auto rounded-panel border border-line">
             <table className="w-full min-w-[760px] border-collapse text-left">
               <caption className="sr-only">
                 The five most recent sealed records in the ledger
@@ -232,8 +233,8 @@ export default async function Home() {
         )}
       </Section>
 
-      <Section id="leaderboard" index={0}>
-        <div className="lg:grid lg:grid-cols-[1.35fr_1fr] lg:gap-11">
+       <Section id="leaderboard" index={0}>
+         <div className="bgrid lg:grid lg:grid-cols-[1.35fr_1fr] lg:gap-11">
           <LeaderboardSection
             title="Skill, not luck."
             banner="Skill is measured against the always-yes baseline. Anyone with fewer than 20 settled questions is marked provisional."
@@ -249,7 +250,7 @@ export default async function Home() {
       </Section>
 
       <Section id="method" index={1}>
-        <div className="grid gap-16 lg:grid-cols-2">
+         <div className="mgrid grid gap-16 lg:grid-cols-2">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.12em] text-mute">
               Method
@@ -262,7 +263,7 @@ export default async function Home() {
                 No question is open right now, so there is no timeline to show.
               </p>
             ) : (
-              <ol className="mt-8 flex flex-col gap-8 border-l border-line pl-7">
+             <ol className="log mt-8 flex flex-col gap-8 border-l border-line pl-7">
                 {method.steps.map((step) => (
                   <li key={step.key} className="relative">
                     <span
@@ -338,7 +339,7 @@ export default async function Home() {
 
       <Section id="faq" index={2} tone="ink">
         <div className="grid gap-16 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="lg:sticky lg:top-24 lg:self-start">
+           <div className="fhead lg:sticky lg:top-24 lg:self-start">
             <p className="font-mono text-xs uppercase tracking-[0.12em] text-mute">
               Questions asked
             </p>
@@ -357,7 +358,7 @@ export default async function Home() {
       </Section>
 
       <SiteFooter />
-    </>
+    </div>
   );
 }
 
@@ -376,19 +377,19 @@ function Section({
     <section
       id={id}
       data-reveal={index % 3}
-      className={`border-b border-line py-16 lg:py-24 ${
+      className={`home-section border-b border-line py-16 lg:py-24 ${
         tone === "ink" ? "bg-ink" : "bg-void"
       }`}
     >
-      <div className="mx-auto w-full max-w-[1180px] px-6">{children}</div>
+      <div className="wrap">{children}</div>
     </section>
   );
 }
 
 function SectionHeader({ title, body }: { title: string; body: string }) {
   return (
-    <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_520px] lg:items-end">
-      <h2 className="font-display text-3xl font-bold tracking-tight text-bone">
+    <div className="home-section-head mb-8 grid gap-6 lg:grid-cols-[1fr_520px] lg:items-end">
+      <h2 className="title font-display text-3xl font-bold tracking-tight text-bone">
         {title}
       </h2>
       <p className="text-mute">{body}</p>
@@ -397,5 +398,5 @@ function SectionHeader({ title, body }: { title: string; body: string }) {
 }
 
 function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-10 text-center text-mute">{children}</p>;
+  return <p className="empty py-10 text-center text-mute">{children}</p>;
 }

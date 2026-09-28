@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { SignInModal } from "@/components/sign-in-modal";
 
 const NAV = [
   ["/questions", "Questions"],
@@ -21,10 +25,11 @@ const LANDING_NAV = [
 ] as const;
 
 export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" }) {
+  const [signInOpen, setSignInOpen] = useState(false);
   const items = variant === "landing" ? LANDING_NAV : NAV;
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[rgba(10,10,11,0.92)] backdrop-blur">
-      <nav className="mx-auto flex w-full max-w-[1180px] items-center gap-1 overflow-x-auto px-6 py-2">
+    <header className="sticky top-0 z-30 border-b border-line bg-[rgba(10,10,11,0.96)]">
+      <nav className="site-nav wrap flex items-center gap-1">
         <Link
           href="/"
           aria-label="Called home"
@@ -38,18 +43,28 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
             priority
             className="h-7 w-7"
           />
-          <span className="font-display text-lg font-bold">Called</span>
+          <span className="site-brand">Called</span>
         </Link>
-        {items.map(([href, label]) => (
-          <Link
-            key={href}
-            href={href}
-            className="inline-flex min-h-11 items-center rounded-field px-3 text-sm text-mute hover:bg-ink hover:text-bone"
+        <div className="site-links ml-auto flex min-w-0 items-center gap-1">
+          {items.map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="inline-flex min-h-11 shrink-0 items-center rounded-field px-3 text-sm text-mute hover:bg-ink hover:text-bone"
+            >
+              {label}
+            </Link>
+          ))}
+          <button
+            type="button"
+            onClick={() => setSignInOpen(true)}
+            className="inline-flex min-h-11 shrink-0 items-center rounded-field border border-line px-3 text-sm text-mute hover:border-bone hover:text-bone"
           >
-            {label}
-          </Link>
-        ))}
+            Sign in
+          </button>
+        </div>
       </nav>
+      <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
     </header>
   );
 }

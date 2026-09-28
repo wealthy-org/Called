@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { explorerTxLink } from "@/lib/explorer";
 import { loadAnchor } from "./data";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +26,9 @@ export default async function AnchorPage(props: PageProps<"/anchor/[id]">) {
   const txLink = explorerTxLink(anchor.txHash);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <>
+      <SiteHeader />
+    <main className="wrap section">
       <p className="font-mono text-xs uppercase text-mute">Anchor</p>
       <h1 className="mt-1 font-display text-3xl text-bone">Chain head</h1>
       <p className="mt-2 max-w-xl text-sm text-mute">
@@ -99,5 +103,7 @@ export default async function AnchorPage(props: PageProps<"/anchor/[id]">) {
         </Link>
       </p>
     </main>
+    <SiteFooter />
+    </>
   );
 }

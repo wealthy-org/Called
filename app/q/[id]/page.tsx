@@ -6,6 +6,8 @@ import { getQuestion } from "@/lib/question-store";
 import { Countdown } from "./countdown";
 import { ResultBlock } from "./result";
 import { SealForm } from "./seal-form";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +38,17 @@ export default async function QuestionPage({
   );
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <>
+      <SiteHeader />
+    <main className="wrap section">
       <p className="font-mono text-xs text-mute">
         <Link href="/questions" className="hover:text-bone">
           Questions
         </Link>
       </p>
 
-      <h1 className="mt-3 text-2xl leading-snug text-bone">{question.text}</h1>
+      <p className="kicker mt-8">Question</p>
+      <h1 className="mt-3 max-w-4xl font-display text-4xl font-bold leading-tight text-bone sm:text-5xl">{question.text}</h1>
 
       <dl className="mt-6 flex flex-col gap-y-2 font-mono text-sm">
         <div className="flex gap-3">
@@ -109,5 +114,7 @@ export default async function QuestionPage({
         </div>
       ) : null}
     </main>
+    <SiteFooter />
+    </>
   );
 }
