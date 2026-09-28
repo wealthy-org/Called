@@ -94,40 +94,49 @@ export function QuestionsArchive({
 
   return (
     <div className="questions-page">
-      {/* ── Page Header ── */}
-      <p className="kicker">Questions</p>
-      <h1 className="page-title">Questions asked.</h1>
-      <p className="mt-5 max-w-[620px] text-lg text-mute">
-        A public archive of questions with fixed sources, resolution tests, and
-        forecast history.
-      </p>
+      {/* ── Two-Column Editorial Header ── */}
+      <div className="qhead">
+        <div className="qhead-left">
+          <p className="kicker">Questions</p>
+          <h1 className="qpage-title">Questions asked.</h1>
+          <p className="qhead-desc">
+            A public archive of questions with fixed sources, resolution
+            tests, and forecast history.
+          </p>
+        </div>
 
-      {/* ── Archive Summary ── */}
-      <div className="qsummary mt-10">
-        <div className="qsummary-item">
-          <span className="qsummary-label">QUESTIONS</span>
-          <span className="qsummary-value font-display">{padded(summary.total)}</span>
-        </div>
-        <div className="qsummary-item">
-          <span className="qsummary-label">OPEN</span>
-          <span className="qsummary-value qsummary-open">{padded(summary.open)}</span>
-        </div>
-        <div className="qsummary-item">
-          <span className="qsummary-label">CLOSED</span>
-          <span className="qsummary-value">{padded(summary.closed)}</span>
-        </div>
-        <div className="qsummary-item">
-          <span className="qsummary-label">SETTLED</span>
-          <span className="qsummary-value">{padded(summary.settled)}</span>
-        </div>
-        <div className="qsummary-item">
-          <span className="qsummary-label">VOID</span>
-          <span className="qsummary-value">{padded(summary.void)}</span>
+        <div className="qindex">
+          <div className="qindex-item">
+            <span className="qindex-label">QUESTIONS</span>
+            <span className="qindex-value font-display">
+              {padded(summary.total)}
+            </span>
+          </div>
+          <div className="qindex-item">
+            <span className="qindex-label">OPEN</span>
+            <span className="qindex-value qindex-open">
+              {padded(summary.open)}
+            </span>
+          </div>
+          <div className="qindex-item">
+            <span className="qindex-label">CLOSED</span>
+            <span className="qindex-value">{padded(summary.closed)}</span>
+          </div>
+          <div className="qindex-item">
+            <span className="qindex-label">SETTLED</span>
+            <span className="qindex-value">{padded(summary.settled)}</span>
+          </div>
+          <div className="qindex-item">
+            <span className="qindex-label">VOID</span>
+            <span className="qindex-value">{padded(summary.void)}</span>
+          </div>
         </div>
       </div>
 
+      <div className="qrule" />
+
       {/* ── Filter Bar ── */}
-      <div className="qfilter mt-8">
+      <div className="qfilter">
         <div className="qfilter-tabs">
           {FILTERS.map((f) => (
             <button

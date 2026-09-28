@@ -278,7 +278,7 @@ export default async function QuestionPage({
           reveals.length > 0 && (
             <div className="dossier-reveals">
               <h2 className="kicker">Forecasts</h2>
-              <RevealList reveals={reveals} questionId={q.id} />
+              <RevealList reveals={reveals} />
             </div>
           )}
 
