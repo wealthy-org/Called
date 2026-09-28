@@ -58,6 +58,12 @@ export async function buildChainRecord(
     ),
   };
 }
-export function validateProbability(p: number): boolean {
-  return Number.isFinite(p) && p >= 0 && p <= 1;
+export function validateProbability(p: number): string | null {
+  if (!Number.isFinite(p)) {
+    return "p must be a finite number between 0 and 1";
+  }
+  if (p < 0 || p > 1) {
+    return "p must be between 0 and 1";
+  }
+  return null;
 }

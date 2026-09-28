@@ -35,7 +35,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "questionId is required" }, { status: 400 });
   }
 
-  const p = Number(body.p);
+  if (typeof body.p !== "number") {
+    return NextResponse.json(
+      { error: "p must be a number between 0 and 1" },
+      { status: 400 },
+    );
+  }
+
+  const p = body.p;
   const probabilityError = validateProbability(p);
   if (probabilityError !== null) {
     return NextResponse.json({ error: probabilityError }, { status: 400 });

@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { forecasters, seals } from "@/db/schema";
+import { forecasters, sealReveals, seals } from "@/db/schema";
 import { GENESIS_PREV_HASH } from "./hash";
 import { recordHash } from "./seal";
 
@@ -98,4 +98,50 @@ export async function appendSeal(input: AppendSealInput): Promise<AppendResult> 
 
     return { ok: true, sealId: inserted.id, commit: inserted.commit, recordIndex: inserted.recordIndex, hash: inserted.hash } as const;
   });
+}
+
+export type AppendRevealResult =
+  | { ok: true; revealId: string; revealedAt: Date }
+  | { ok: false; reason: "already_revealed" | "unknown_seal" };
+
+export async function appendReveal(input: {
+  sealId: string;
+  payloadJson: string;
+  salt: string;
+}): Promise<AppendRevealResult> {
+  const [seal] = await db
+    .select({ id: seals.id })
+    .from(seals)
+    .where(eq(seals.id, input.sealId))
+    .limit(1);
+
+  if (seal === undefined) {
+    return { ok: false, reason: "unknown_seal" };
+  }
+
+  const [existing] = await db
+    .select({ id: sealReveals.id })
+    .from(sealReveals)
+    .where(eq(sealReveals.sealId, input.sealId))
+    .limit(1);
+
+  if (existing !== undefined) {
+    return { ok: false, reason: "already_revealed" };
+  }
+
+  const [inserted] = await db
+    .insert(sealReveals)
+    .values({
+      id: `reveal-${input.sealId}`,
+      sealId: input.sealId,
+      payloadJson: input.payloadJson,
+      salt: input.salt,
+    })
+    .returning({ id: sealReveals.id, revealedAt: sealReveals.revealedAt });
+
+  if (inserted === undefined) {
+    throw new Error("reveal insert returned no row");
+  }
+
+  return { ok: true, revealId: inserted.id, revealedAt: inserted.revealedAt };
 }

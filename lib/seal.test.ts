@@ -132,15 +132,20 @@ describe("buildChainRecord", () => {
 
 describe("validateProbability", () => {
   it("accepts the closed unit interval", () => {
-    expect(validateProbability(0)).toBe(true);
-    expect(validateProbability(0.5)).toBe(true);
-    expect(validateProbability(1)).toBe(true);
+    expect(validateProbability(0)).toBeNull();
+    expect(validateProbability(0.5)).toBeNull();
+    expect(validateProbability(1)).toBeNull();
   });
 
   it("rejects out of range and non finite values", () => {
-    expect(validateProbability(-0.01)).toBe(false);
-    expect(validateProbability(1.01)).toBe(false);
-    expect(validateProbability(Number.NaN)).toBe(false);
-    expect(validateProbability(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(validateProbability(-0.01)).toBeTypeOf("string");
+    expect(validateProbability(1.01)).toBeTypeOf("string");
+    expect(validateProbability(Number.NaN)).toBeTypeOf("string");
+    expect(validateProbability(Number.POSITIVE_INFINITY)).toBeTypeOf("string");
+  });
+
+  it("explains why a value was rejected", () => {
+    expect(validateProbability(1.01)).toMatch(/between 0 and 1/);
+    expect(validateProbability(Number.NaN)).toMatch(/finite/);
   });
 });
