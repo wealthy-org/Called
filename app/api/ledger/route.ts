@@ -2,10 +2,16 @@ import { asc, desc, gt } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { anchors, seals } from "@/db/schema";
+import { rateLimited } from "@/lib/public-api";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const limited = rateLimited(request);
+  if (limited !== null) {
+    return limited;
+  }
+
   const url = new URL(request.url);
   const sinceRaw = url.searchParams.get("since");
   const parsed = sinceRaw === null ? Number.NaN : Number.parseInt(sinceRaw, 10);
@@ -61,6 +67,7 @@ export async function GET(request: Request) {
     {
       headers: {
         "cache-control": "no-store",
+        "access-control-allow-origin": "*",
       },
     },
   );
