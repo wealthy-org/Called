@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { milestoneFor } from "@/lib/countdown";
 import { getQuestion } from "@/lib/question-store";
 import { Countdown } from "./countdown";
+import { ResultBlock } from "./result";
 import { SealForm } from "./seal-form";
 
 export const dynamic = "force-dynamic";
@@ -95,23 +96,14 @@ export default async function QuestionPage({
       ) : null}
 
       {question.status === "settled" || question.status === "void" ? (
-        <div className="mt-6 border-t border-line pt-4">
-          <p className="font-mono text-xs uppercase text-mute">Result</p>
-          <p className="mt-1 font-display text-3xl text-bone">
-            {question.status === "void"
-              ? "VOID"
-              : question.outcome
-                ? "YES"
-                : "NO"}
-          </p>
-          {question.readingValue !== null ? (
-            <p className="mt-1 font-mono text-xs text-mute">
-              reading {question.readingValue}
-              {question.readingBlock !== null
-                ? ` at block ${question.readingBlock}`
-                : ""}
-            </p>
-          ) : null}
+        <div className="mt-6">
+          <ResultBlock
+            status={question.status}
+            outcome={question.outcome}
+            test={question.test}
+            readingValue={question.readingValue}
+            readingBlock={question.readingBlock}
+          />
         </div>
       ) : null}
     </main>

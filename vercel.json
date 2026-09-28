@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/questions/close",
+      "schedule": "15 * * * *"
+    },
+    {
+      "path": "/api/cron/settle",
+      "schedule": "0 21 * * *"
+    }
+  ]
+}
