@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { SignInModal } from "@/components/sign-in-modal";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 
 export const AGENT_SELF_RUN_LABEL = "Agent (self-run)";
 
@@ -224,9 +222,7 @@ export default function AgentsPage() {
   }
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <div className="max-w-3xl">
       <h1 className="font-display text-3xl text-bone">Agents</h1>
       <p className="mt-2 max-w-xl text-sm text-mute">
         Register an agent, run it once per question with your own provider key.
@@ -482,8 +478,6 @@ export default function AgentsPage() {
         onClose={() => setSignInOpen(false)}
         onSignedIn={reload}
       />
-    </main>
-    <SiteFooter />
-    </>
+    </div>
   );
 }

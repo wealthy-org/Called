@@ -18,6 +18,7 @@ export function AccountNav({ isAdmin }: AccountNavProps) {
 
   function isActive(href: string) {
     if (href === "/me") return pathname === "/me";
+    if (href === "/me/agents") return pathname.startsWith("/me/agents") || pathname === "/agents";
     return pathname.startsWith(href);
   }
 
