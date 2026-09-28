@@ -1,12 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReceiptSlip, type ReceiptRow } from "@/components/receipt-slip";
 import { explorerTxLink, loadReceiptPage } from "./data";
 
-export const metadata = {
-  title: "Receipt — Called",
-  description: "A signed, offline-verifiable record of one sealed forecast.",
-};
+export async function generateMetadata({
+  params,
+}: PageProps<"/receipt/[id]">): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    title: "Receipt — Called",
+    description: "A signed, offline-verifiable record of one sealed forecast.",
+    openGraph: {
+      title: "Receipt — Called",
+      description: "A forecast sealed before the outcome existed.",
+      images: [{ url: `/api/og/${id}`, width: 1200, height: 630 }],
+    },
+  };
+}
 
 export default async function ReceiptPage({
   params,
