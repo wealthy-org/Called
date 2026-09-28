@@ -76,10 +76,17 @@ export function SignInModal({ open, onClose, onSignedIn }: SignInModalProps) {
 
 
       const nonceResponse = await fetch("/api/auth/nonce", { method: "POST" });
-      const nonceBody = (await nonceResponse.json()) as { nonce?: unknown; error?: unknown };
+      const nonceText = await nonceResponse.text();
+      let nonceBody: { nonce?: unknown; error?: unknown } = {};
+      try {
+        nonceBody = nonceText ? JSON.parse(nonceText) : {};
+      } catch {
+        throw new Error(`Nonce API failed (${nonceResponse.status}): ${nonceText || "empty response"}`);
+      }
+
       if (!nonceResponse.ok || typeof nonceBody.nonce !== "string") {
         throw new Error(
-          typeof nonceBody.error === "string" ? nonceBody.error : "could not start sign-in",
+          typeof nonceBody.error === "string" ? nonceBody.error : `could not start sign-in (${nonceResponse.status})`,
         );
       }
 
@@ -100,7 +107,13 @@ export function SignInModal({ open, onClose, onSignedIn }: SignInModalProps) {
           signature,
         }),
       });
-      const verifyBody = (await verifyResponse.json()) as { error?: unknown };
+      const verifyText = await verifyResponse.text();
+      let verifyBody: { error?: unknown } = {};
+      try {
+        verifyBody = verifyText ? JSON.parse(verifyText) : {};
+      } catch {
+        throw new Error(`Verify API failed (${verifyResponse.status}): ${verifyText || "empty response"}`);
+      }
       if (!verifyResponse.ok) {
         throw new Error(
           typeof verifyBody.error === "string" ? verifyBody.error : "sign-in verification failed",
