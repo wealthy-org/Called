@@ -54,6 +54,7 @@ export const forecasters = pgTable(
     name: text("name").notNull(),
     model: text("model"),
     modelVersion: text("model_version"),
+    providerEndpoint: text("provider_endpoint"),
     promptHash: text("prompt_hash"),
     isReserve: boolean("is_reserve").notNull().default(false),
     isRanked: boolean("is_ranked").notNull().default(true),

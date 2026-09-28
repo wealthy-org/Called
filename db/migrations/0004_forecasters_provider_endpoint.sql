@@ -1,0 +1,1 @@
+ALTER TABLE "forecasters" ADD COLUMN "provider_endpoint" text;

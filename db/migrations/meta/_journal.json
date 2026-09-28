@@ -29,6 +29,13 @@
       "when": 1790563364331,
       "tag": "0003_seals_salt",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790569069808,
+      "tag": "0004_forecasters_provider_endpoint",
+      "breakpoints": true
     }
   ]
 }
