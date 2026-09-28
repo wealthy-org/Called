@@ -14,4 +14,4 @@ crons = [
 ]
 
 [vars]
-APP_URL = "https://called.example"
+APP_URL = "https://called-five.vercel.app"
