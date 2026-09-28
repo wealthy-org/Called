@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { anchors, questions, receipts, seals } from "@/db/schema";
+import { bestAnchorFor, type AnchorRecord } from "@/lib/anchor-status";
 import { serverEnv, type EnvSource } from "@/lib/env";
 import { receiptPublicKey, verifyReceipt } from "@/lib/receipt";
 
@@ -75,16 +76,19 @@ export async function loadReceiptPage(
     row.signature,
   );
 
-  const head = await db
+  const anchorRows: AnchorRecord[] = await db
     .select({
-      blockNumber: anchors.blockNumber,
+      headHash: anchors.headHash,
+      recordCount: anchors.recordCount,
       txHash: anchors.txHash,
+      blockNumber: anchors.blockNumber,
+      blockTime: anchors.blockTime,
     })
     .from(anchors)
-    .where(eq(anchors.recordCount, row.recordIndex))
-    .limit(1);
+    .where(eq(anchors.confirmed, true))
+    .orderBy(desc(anchors.recordCount));
 
-  const anchor = head[0];
+  const anchor = bestAnchorFor(row.recordIndex, anchorRows);
 
   const outcome =
     row.status === "void"
@@ -108,8 +112,8 @@ export async function loadReceiptPage(
     signature: row.signature,
     publicKey,
     valid,
-    anchorBlock: anchor === undefined ? null : String(anchor.blockNumber),
-    anchorTx: anchor === undefined ? null : anchor.txHash,
+    anchorBlock: anchor === null ? null : String(anchor.blockNumber),
+    anchorTx: anchor === null ? null : anchor.txHash,
     outcome,
     readingValue: row.readingValue,
   };

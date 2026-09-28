@@ -1,0 +1,17 @@
+name = "called-cron"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+# Vercel Hobby only allows daily crons, so the schedule lives here instead.
+# Each entry maps to one route on the app; see src/index.ts.
+[triggers]
+crons = [
+  "*/15 * * * *",
+  "0 21 * * *",
+  "30 6 * * *",
+  "45 21 * * *",
+]
+
+[vars]
+APP_URL = "https://called.example"

@@ -20,8 +20,19 @@ function cronAuthorized(request: Request, secret: string): boolean {
  * reads one number from the question's source; an unreadable source voids the
  * question (never a guess). No question without a revealed prediction is
  * settled.
+ *
+ * Served on both GET and POST: Vercel's scheduler uses GET, the Cloudflare
+ * worker in `workers/cron/` uses POST.
  */
+export async function GET(request: Request) {
+  return settleDue(request);
+}
+
 export async function POST(request: Request) {
+  return settleDue(request);
+}
+
+async function settleDue(request: Request) {
   const env = serverEnv(process.env as EnvSource);
 
   if (!cronAuthorized(request, env.CRON_SECRET)) {

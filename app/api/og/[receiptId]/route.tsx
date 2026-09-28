@@ -109,6 +109,7 @@ async function loadCardData(receiptId: string): Promise<CardData | null> {
       blockTime: anchors.blockTime,
     })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.recordCount));
 
   const anchorRecords: AnchorRecord[] = anchorRows;

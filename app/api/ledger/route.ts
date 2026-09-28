@@ -1,4 +1,4 @@
-import { asc, desc, gt } from "drizzle-orm";
+import { asc, desc, eq, gt } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { anchors, seals } from "@/db/schema";
@@ -49,6 +49,7 @@ export async function GET(request: Request) {
       blockTime: anchors.blockTime,
     })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.createdAt))
     .limit(1);
 

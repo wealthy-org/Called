@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "anchors_record_count_unique" ON "anchors" USING btree ("record_count");

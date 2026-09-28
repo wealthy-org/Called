@@ -93,10 +93,12 @@ verifying, and every session is signed out.
 - `lib/` — pure logic (hashing, scoring, resolvers, baselines, parsing) kept free of
   database imports. Files ending `-store.ts` hold the database access.
 - `components/` — shared UI (hero, receipt slip, calibration and spread plots).
-- `db/schema.ts` + `db/migrations/` — Drizzle schema and five migrations.
+- `db/schema.ts` + `db/migrations/` — Drizzle schema and migrations.
 - `config/` — house model tiers and the vague-word list.
 - `prompts/forecaster.md` — the public Cassandra prompt.
 - `assets/fonts/` — fonts embedded in the OG share card.
+- `workers/cron/` — the Cloudflare Worker that drives the cron schedule. Excluded
+  from `tsconfig.json` and ESLint; deploy with `cd workers/cron; npx wrangler deploy`.
 - `public/called-logo-no-bg.png` — source mark. Icons and logos are generated from it
   with `npm run gen:icons`; do not edit the generated files by hand.
 - `docs/` — product, architecture and design specs.
@@ -121,12 +123,31 @@ API groups:
 
 ## Cron
 
-| Path | Schedule (UTC) | Purpose |
+Vercel Hobby only allows daily cron jobs, and rejects sub-daily expressions at
+deploy time. The schedule therefore lives in a small Cloudflare Worker at
+`workers/cron/`, which calls the same routes with `Authorization: Bearer
+$CRON_SECRET`.
+
+| Route | Schedule (UTC) | Purpose |
 | --- | --- | --- |
-| `/api/questions/close` | `15 * * * *` | Close questions whose close time passed. |
-| `/api/cron/settle` | `0 21 * * *` | Read the source and settle closed questions. |
-| `/api/cron/house-models` | `30 6 * * *` | Confirm house model tiers still exist and are free. |
-| `/api/cron/anchor` | `45 21 * * *` | Anchor the chain head on-chain. |
+| `POST /api/questions/close` | `*/15 * * * *` | Close questions whose close time passed. |
+| `POST /api/cron/settle` | `0 21 * * *` | Read the source and settle closed questions. |
+| `GET /api/cron/house-models` | `30 6 * * *` | Confirm house model tiers still exist and are free. |
+| `POST /api/cron/anchor` | `45 21 * * *` | Anchor the chain head on-chain. |
+
+Deploy the worker:
+
+```bash
+cd workers/cron
+npx wrangler secret put CRON_SECRET   # same value as the app's CRON_SECRET
+# set APP_URL in wrangler.toml to your production URL
+npx wrangler deploy
+```
+
+Closing is also **lazy**: the question list, question detail and the public
+question APIs sweep due questions on every request, so a question leaves `open`
+the moment someone looks at it after `closes_at`. The cron only exists as a
+backstop for quiet periods; the app never depends on it.
 
 ## Verify it yourself
 

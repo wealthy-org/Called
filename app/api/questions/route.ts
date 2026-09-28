@@ -1,3 +1,4 @@
+import { sweepDueQuestions } from "@/lib/close-sweep";
 import { listQuestions } from "@/lib/question-store";
 import { publicJson, rateLimited } from "@/lib/public-api";
 
@@ -9,6 +10,7 @@ export async function GET(request: Request) {
     return limited;
   }
 
+  await sweepDueQuestions();
   const questions = await listQuestions();
   return publicJson({ questions, count: questions.length }, { maxAgeSeconds: 30 });
 }

@@ -3,6 +3,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { anchors, questions, sealReveals, seals } from "@/db/schema";
 import { anchorStatusFor, type AnchorRecord } from "@/lib/anchor-status";
+import { sweepDueQuestions } from "@/lib/close-sweep";
 import type { QuestionDetail } from "@/lib/question-store";
 import { getQuestion } from "@/lib/question-store";
 import type { LedgerRecordView } from "@/app/ledger/verify";
@@ -48,6 +49,7 @@ export async function loadHomeSession(): Promise<HomeSessionView> {
       blockTime: anchors.blockTime,
     })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.recordCount));
 
   if (head === undefined) {
@@ -63,6 +65,7 @@ export async function loadHomeSession(): Promise<HomeSessionView> {
   const [latest] = await db
     .select({ id: anchors.id })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.recordCount))
     .limit(1);
 
@@ -75,6 +78,7 @@ export async function loadHomeSession(): Promise<HomeSessionView> {
 }
 
 export async function loadHomeQuestion(): Promise<HomeQuestionView | null> {
+  await sweepDueQuestions();
   const [row] = await db
     .select({ id: questions.id })
     .from(questions)

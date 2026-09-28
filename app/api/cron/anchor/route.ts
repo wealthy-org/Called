@@ -1,12 +1,14 @@
-import { desc } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { anchors, seals } from "@/db/schema";
 import { sendAnchorTx } from "@/lib/anchor";
-import { latestAnchor } from "@/lib/anchor-status";
+import { latestAnchor, type AnchorRecord } from "@/lib/anchor-status";
 import { ROBINHOOD_CHAIN_ID, serverEnv, type EnvSource } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
+
+const CLAIM_TTL_MS = 15 * 60 * 1000;
 
 function cronAuthorized(request: Request, secret: string): boolean {
   return request.headers.get("authorization") === `Bearer ${secret}`;
@@ -14,13 +16,17 @@ function cronAuthorized(request: Request, secret: string): boolean {
 
 /**
  * Plants the chain head on Robinhood Chain (ID 4663) as 44-byte calldata on a
- * zero-value transaction. Runs daily and on every question close via
- * `Authorization: Bearer $CRON_SECRET`. No contract, no ABI, no token: the head
- * hash and record count travel inside the transaction data itself.
+ * zero-value transaction. Runs daily via `Authorization: Bearer $CRON_SECRET`.
+ * No contract, no ABI, no token: the head hash and record count travel inside
+ * the transaction data itself.
  *
  * The anchor is separate from sealing so chain latency or cost never blocks a
  * user. Until a record is anchored it is shown as `pending anchor` and is never
  * called proven.
+ *
+ * Concurrency: two triggers must not send two transactions. The unique index
+ * `anchors_record_count_unique` plus a claim row make the insert the mutex. The
+ * transaction is never held open across the RPC call (`db` uses max: 1).
  */
 export async function POST(request: Request) {
   const env = serverEnv(process.env as EnvSource);
@@ -40,8 +46,9 @@ export async function POST(request: Request) {
   }
 
   const headRecord = head[0];
+  const recordCount = headRecord.recordIndex + 1;
 
-  const existing = await db
+  const existing: AnchorRecord[] = await db
     .select({
       headHash: anchors.headHash,
       recordCount: anchors.recordCount,
@@ -50,11 +57,12 @@ export async function POST(request: Request) {
       blockTime: anchors.blockTime,
     })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.recordCount));
 
   const latest = latestAnchor(existing);
 
-  if (latest !== null && latest.recordCount >= headRecord.recordIndex) {
+  if (latest !== null && latest.recordCount >= recordCount) {
     return NextResponse.json({
       anchored: false,
       reason: "already_anchored",
@@ -64,7 +72,38 @@ export async function POST(request: Request) {
     });
   }
 
-  const recordCount = headRecord.recordIndex + 1;
+  // Reclaim a claim left behind by a crashed run. Without this, an unconfirmed
+  // row would make `onConflictDoNothing` fail forever and block all anchoring.
+  const staleBefore = new Date(Date.now() - CLAIM_TTL_MS);
+  await db
+    .delete(anchors)
+    .where(
+      and(eq(anchors.confirmed, false), lte(anchors.createdAt, staleBefore)),
+    );
+
+  const claimId = `anchor-${recordCount}-claim`;
+
+  const claimed = await db
+    .insert(anchors)
+    .values({
+      id: claimId,
+      headHash: headRecord.hash,
+      recordCount,
+      txHash: "pending",
+      blockNumber: 0,
+      blockTime: new Date(),
+      confirmed: false,
+    })
+    .onConflictDoNothing()
+    .returning({ id: anchors.id });
+
+  if (claimed.length === 0) {
+    return NextResponse.json({
+      anchored: false,
+      reason: "already_anchored",
+      recordCount,
+    });
+  }
 
   try {
     const tx = await sendAnchorTx(
@@ -80,16 +119,15 @@ export async function POST(request: Request) {
     const anchorId = `anchor-${recordCount}-${tx.txHash.slice(2, 12)}`;
 
     await db
-      .insert(anchors)
-      .values({
+      .update(anchors)
+      .set({
         id: anchorId,
-        headHash: headRecord.hash,
-        recordCount,
         txHash: tx.txHash,
         blockNumber: tx.blockNumber,
         blockTime: tx.blockTime,
+        confirmed: true,
       })
-      .onConflictDoNothing();
+      .where(eq(anchors.recordCount, recordCount));
 
     return NextResponse.json({
       anchored: true,
@@ -102,6 +140,12 @@ export async function POST(request: Request) {
       chainId: ROBINHOOD_CHAIN_ID,
     });
   } catch (error) {
+    await db
+      .delete(anchors)
+      .where(
+        and(eq(anchors.recordCount, recordCount), eq(anchors.confirmed, false)),
+      );
+
     return NextResponse.json(
       {
         anchored: false,
@@ -111,21 +155,4 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
-}
-
-export async function GET() {
-  const rows = await db
-    .select({
-      id: anchors.id,
-      headHash: anchors.headHash,
-      recordCount: anchors.recordCount,
-      txHash: anchors.txHash,
-      blockNumber: anchors.blockNumber,
-      blockTime: anchors.blockTime,
-    })
-    .from(anchors)
-    .orderBy(desc(anchors.recordCount))
-    .limit(1);
-
-  return NextResponse.json({ anchor: rows[0] ?? null });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sweepDueQuestions } from "@/lib/close-sweep";
 import { getQuestion } from "@/lib/question-store";
 import { publicJson, rateLimited } from "@/lib/public-api";
 
@@ -14,6 +15,7 @@ export async function GET(
   }
 
   const { id } = await context.params;
+  await sweepDueQuestions();
   const question = await getQuestion(id);
 
   if (question === null) {

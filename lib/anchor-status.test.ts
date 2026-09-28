@@ -25,7 +25,11 @@ function anchor(recordCount: number, txHash = "0xabc"): AnchorRecord {
 describe("indexIsAnchored", () => {
   it("is true when an anchor covers the index", () => {
     expect(indexIsAnchored(5, [anchor(10)])).toBe(true);
-    expect(indexIsAnchored(10, [anchor(10)])).toBe(true);
+    expect(indexIsAnchored(9, [anchor(10)])).toBe(true);
+  });
+
+  it("is false at the boundary, because recordCount N covers 0..N-1 only", () => {
+    expect(indexIsAnchored(10, [anchor(10)])).toBe(false);
   });
 
   it("is false when no anchor covers the index", () => {

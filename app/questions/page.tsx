@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { sweepDueQuestions } from "@/lib/close-sweep";
 import { listQuestions } from "@/lib/question-store";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ function shortDate(iso: string): string {
 }
 
 export default async function QuestionsPage() {
+  await sweepDueQuestions();
   const questions = await listQuestions();
 
   return (

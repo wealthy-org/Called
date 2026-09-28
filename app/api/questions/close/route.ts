@@ -16,8 +16,19 @@ function cronAuthorized(request: Request, secret: string): boolean {
  * Closes every open question whose `closes_at` has passed. Cron-only for now:
  * `Authorization: Bearer $CRON_SECRET`. Manual settling is a separate flow that
  * needs two admin approvals and an audit log entry.
+ *
+ * Served on both GET and POST: Vercel's scheduler uses GET, the Cloudflare
+ * worker in `workers/cron/` uses POST.
  */
+export async function GET(request: Request) {
+  return closeDue(request);
+}
+
 export async function POST(request: Request) {
+  return closeDue(request);
+}
+
+async function closeDue(request: Request) {
   const env = serverEnv(process.env as EnvSource);
   const isCron = cronAuthorized(request, env.CRON_SECRET);
 

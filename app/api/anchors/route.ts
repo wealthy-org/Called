@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { anchors } from "@/db/schema";
 import { publicJson, rateLimited } from "@/lib/public-api";
@@ -22,6 +22,7 @@ export async function GET(request: Request) {
       createdAt: anchors.createdAt,
     })
     .from(anchors)
+    .where(eq(anchors.confirmed, true))
     .orderBy(desc(anchors.recordCount));
 
   return publicJson(

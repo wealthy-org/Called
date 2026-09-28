@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare Worker: built by wrangler, not Next. Excluded from tsconfig too.
+    "workers/**",
   ]),
 ]);
 

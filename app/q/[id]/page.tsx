@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { sweepDueQuestions } from "@/lib/close-sweep";
 import { milestoneFor } from "@/lib/countdown";
 import { getQuestion } from "@/lib/question-store";
 import { Countdown } from "./countdown";
@@ -19,6 +20,7 @@ export default async function QuestionPage({
   params,
 }: PageProps<"/q/[id]">) {
   const { id } = await params;
+  await sweepDueQuestions();
   const question = await getQuestion(id);
 
   if (!question) {

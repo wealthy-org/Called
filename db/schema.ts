@@ -174,17 +174,22 @@ export const receipts = pgTable(
   (t) => [uniqueIndex("receipts_seal_id_unique").on(t.sealId)],
 );
 
-export const anchors = pgTable("anchors", {
-  id: text("id").primaryKey(),
-  headHash: text("head_hash").notNull(),
-  recordCount: integer("record_count").notNull(),
-  txHash: text("tx_hash").notNull(),
-  blockNumber: bigint("block_number", { mode: "number" }).notNull(),
-  blockTime: timestamp("block_time", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const anchors = pgTable(
+  "anchors",
+  {
+    id: text("id").primaryKey(),
+    headHash: text("head_hash").notNull(),
+    recordCount: integer("record_count").notNull(),
+    txHash: text("tx_hash").notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    blockTime: timestamp("block_time", { withTimezone: true }).notNull(),
+    confirmed: boolean("confirmed").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("anchors_record_count_unique").on(table.recordCount)],
+);
 
 export const scores = pgTable(
   "scores",

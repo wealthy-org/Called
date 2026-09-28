@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { anchors } from "@/db/schema";
 
@@ -26,7 +26,7 @@ export async function loadAnchor(id: string): Promise<AnchorPageData | null> {
       createdAt: anchors.createdAt,
     })
     .from(anchors)
-    .where(eq(anchors.id, id))
+    .where(and(eq(anchors.id, id), eq(anchors.confirmed, true)))
     .limit(1);
 
   return rows[0] ?? null;
