@@ -45,6 +45,10 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
 
   const items = variant === "landing" ? LANDING_NAV : NAV;
 
+  const avatarText = (user?.handle ?? user?.walletAddress ?? "")
+    .slice(0, 2)
+    .toUpperCase();
+
   useEffect(() => {
     fetch("/api/auth/session", { cache: "no-store" })
       .then((r) => r.json())
@@ -107,12 +111,13 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                   onClick={() => setWalletOpen((v) => !v)}
                   aria-expanded={walletOpen}
                   aria-haspopup="menu"
-                  className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-field border border-line px-3 text-sm text-bone hover:border-bone"
+                  aria-label="Account menu"
+                  className="ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-seal text-void"
+                  title={user.handle ?? user.walletAddress ?? "Account"}
                 >
-                  <span className="font-mono text-xs">
-                    {user.handle ?? truncateWallet(user.walletAddress)}
+                  <span className="font-mono text-xs font-bold">
+                    {avatarText}
                   </span>
-                  <span aria-hidden="true" className="text-mute text-xs">v</span>
                 </button>
 
                 {walletOpen && (
@@ -143,7 +148,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
               <button
                 type="button"
                 onClick={() => setSignInOpen(true)}
-                className="inline-flex min-h-11 shrink-0 items-center rounded-field border border-line px-3 text-sm text-mute hover:border-bone hover:text-bone"
+                className="ml-2 inline-flex min-h-11 shrink-0 items-center rounded-field bg-seal px-4 text-sm font-semibold text-void hover:bg-bone"
               >
                 Sign in
               </button>
