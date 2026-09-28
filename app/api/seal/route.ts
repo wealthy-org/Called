@@ -1,12 +1,13 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { questions } from "@/db/schema";
+import { anchors, questions } from "@/db/schema";
 import { encryptPayload } from "@/lib/crypto-box";
 import { serverEnv, type EnvSource } from "@/lib/env";
 import { commitHash, stablePayloadJson, validateProbability } from "@/lib/seal";
 import { appendSeal, ensureForecaster } from "@/lib/seal-store";
 import { readSession } from "@/lib/session";
+import { anchorStatusFor } from "@/lib/anchor-status";
 
 export const MAX_RATIONALE_LENGTH = 2000;
 
@@ -125,6 +126,22 @@ export async function POST(request: Request) {
     );
   }
 
+  const sealedAt = new Date().toISOString();
+
+  const anchorRows = await db
+    .select({
+      headHash: anchors.headHash,
+      recordCount: anchors.recordCount,
+      txHash: anchors.txHash,
+      blockNumber: anchors.blockNumber,
+      blockTime: anchors.blockTime,
+    })
+    .from(anchors)
+    .where(eq(anchors.confirmed, true))
+    .orderBy(desc(anchors.recordCount));
+
+  const anchorStatus = anchorStatusFor(result.recordIndex, anchorRows);
+
   return NextResponse.json(
     {
       sealId: result.sealId,
@@ -133,6 +150,8 @@ export async function POST(request: Request) {
       recordIndex: result.recordIndex,
       hash: result.hash,
       receiptId: result.receiptId,
+      sealedAt,
+      anchorStatus,
     },
     { status: 201 },
   );

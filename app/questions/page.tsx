@@ -1,88 +1,66 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { sweepDueQuestions } from "@/lib/close-sweep";
 import { listQuestions } from "@/lib/question-store";
 import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
+import { QuestionsArchive } from "@/components/questions-archive";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABEL: Record<string, string> = {
-  open: "OPEN",
-  closed: "CLOSED",
-  settled: "SETTLED",
-  void: "VOID",
+export const metadata: Metadata = {
+  title: "Questions — Called",
+  description:
+    "A public archive of forecasting questions with fixed sources, resolution tests, and forecast history.",
 };
-
-function shortDate(iso: string): string {
-  return iso.slice(0, 10);
-}
 
 export default async function QuestionsPage() {
   await sweepDueQuestions();
   const questions = await listQuestions();
 
+  const summary = {
+    total: questions.length,
+    open: questions.filter((q) => q.status === "open").length,
+    closed: questions.filter((q) => q.status === "closed").length,
+    settled: questions.filter((q) => q.status === "settled").length,
+    void: questions.filter((q) => q.status === "void").length,
+    totalSeals: questions.reduce((sum, q) => sum + q.sealCount, 0),
+  };
+
+  const latestSettled = questions
+    .filter((q) => q.status === "settled" && q.outcome !== null)
+    .sort(
+      (a, b) =>
+        new Date(b.resolvesAt).getTime() - new Date(a.resolvesAt).getTime(),
+    )[0] ?? null;
+
   return (
     <>
       <SiteHeader />
       <main className="wrap section">
-      <p className="kicker">Archive</p>
-      <h1 className="page-title">Questions asked</h1>
-
-      {questions.length === 0 ? (
-        <p className="mt-6 text-mute">
-          No questions yet. Nothing has been asked.
-        </p>
-      ) : (
-        <ul className="mt-10 flex flex-col border-t border-line">
-          {questions.map((question) => (
-             <li key={question.id} className="py-6">
-              <Link
-                href={`/q/${question.id}`}
-                   className="block max-w-3xl text-xl text-bone hover:text-seal"
-              >
-                {question.text}
-              </Link>
-              <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-mute">
-                <div className="flex gap-2">
-                  <dt>ID</dt>
-                  <dd>{question.id}</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt>STATUS</dt>
-                  <dd
-                    className={
-                      question.status === "open" ? "text-seal" : "text-bone"
-                    }
-                  >
-                    {STATUS_LABEL[question.status] ?? question.status}
-                  </dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt>CLOSE</dt>
-                  <dd>{shortDate(question.closesAt)}</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt>SEALS</dt>
-                  <dd>
-                    {question.sealCount}
-                    {question.status === "closed"
-                      ? ` / ${question.revealCount} revealed`
-                      : ""}
-                  </dd>
-                </div>
-                {question.outcome !== null ? (
-                  <div className="flex gap-2">
-                    <dt>OUTCOME</dt>
-                    <dd className="text-bone">
-                      {question.outcome ? "YES" : "NO"}
-                    </dd>
-                  </div>
-                ) : null}
-              </dl>
-            </li>
-          ))}
-        </ul>
-       )}
+        <QuestionsArchive
+          questions={questions.map((q) => ({
+            id: q.id,
+            text: q.text,
+            status: q.status,
+            closesAt: q.closesAt,
+            resolvesAt: q.resolvesAt,
+            outcome: q.outcome,
+            sealCount: q.sealCount,
+            revealCount: q.revealCount,
+          }))}
+          summary={summary}
+          latestSettled={
+            latestSettled
+              ? {
+                  id: latestSettled.id,
+                  text: latestSettled.text,
+                  outcome: latestSettled.outcome!,
+                  resolvesAt: latestSettled.resolvesAt,
+                  sealCount: latestSettled.sealCount,
+                }
+              : null
+          }
+        />
       </main>
       <WorkspaceFooter />
     </>

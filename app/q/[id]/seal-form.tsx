@@ -34,13 +34,13 @@ function readNumber(body: unknown, key: string): number {
 export function SealForm({ questionId }: { questionId: string }) {
   const [percent, setPercent] = useState(50);
   const [rationale, setRationale] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [sealed, setSealed] = useState<SealedReceiptData | null>(null);
   const [signInOpen, setSignInOpen] = useState(false);
 
   async function submit() {
-    setStatus("sending");
+    setFormStatus("sending");
     setError(null);
 
     const salt = newSalt();
@@ -63,7 +63,7 @@ export function SealForm({ questionId }: { questionId: string }) {
         const message =
           readString(body, "error") ||
           `seal failed with status ${response.status}`;
-        setStatus("idle");
+        setFormStatus("idle");
         if (response.status === 401) {
           setSignInOpen(true);
           return;
@@ -78,80 +78,87 @@ export function SealForm({ questionId }: { questionId: string }) {
         salt: readString(body, "salt") || salt,
         recordIndex: readNumber(body, "recordIndex"),
         receiptId: readString(body, "receiptId"),
+        sealedAt: readString(body, "sealedAt"),
+        anchorStatus:
+          readString(body, "anchorStatus") as SealedReceiptData["anchorStatus"],
       });
-      setStatus("done");
+      setFormStatus("done");
     } catch {
-      setStatus("idle");
+      setFormStatus("idle");
       setError("network error, seal not sent");
     }
   }
 
-  if (status === "done" && sealed !== null) {
+  if (formStatus === "done" && sealed !== null) {
     return <ReceiptBlock data={sealed} />;
   }
 
   return (
     <>
-    <div className="flex flex-col gap-4">
-      <div>
-        <label
-          htmlFor="seal-percent"
-          className="font-mono text-xs uppercase text-mute"
-        >
-          Probability
-        </label>
-        <div className="mt-2 flex items-center gap-4">
-          <input
-            id="seal-percent"
-            type="range"
-            min={MIN_PERCENT}
-            max={MAX_PERCENT}
-            value={percent}
-            onChange={(event) => setPercent(Number(event.target.value))}
-            className="h-11 flex-1 accent-seal"
-          />
-          <output className="w-16 text-right font-display text-2xl text-bone tabular-nums">
-            {percent}%
-          </output>
+      <div className="seal-form">
+        <div className="seal-probability">
+          <label htmlFor="seal-percent" className="seal-label">
+            Probability
+          </label>
+          <div className="seal-slider-row">
+            <input
+              id="seal-percent"
+              type="range"
+              min={MIN_PERCENT}
+              max={MAX_PERCENT}
+              value={percent}
+              onChange={(e) => setPercent(Number(e.target.value))}
+              className="seal-slider"
+              aria-label="Probability"
+            />
+            <output
+              htmlFor="seal-percent"
+              className="seal-output"
+            >
+              {percent}%
+            </output>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label
-          htmlFor="seal-rationale"
-          className="font-mono text-xs uppercase text-mute"
+        <div className="seal-reason">
+          <label htmlFor="seal-rationale" className="seal-label">
+            One sentence, max {MAX_RATIONALE_LENGTH} characters
+          </label>
+          <textarea
+            id="seal-rationale"
+            value={rationale}
+            maxLength={MAX_RATIONALE_LENGTH}
+            onChange={(e) => setRationale(e.target.value)}
+            rows={3}
+            className="seal-textarea"
+            placeholder="Why this probability?"
+            aria-describedby="seal-char-count"
+          />
+          <p id="seal-char-count" className="seal-char-count" aria-live="polite">
+            {rationale.length} / {MAX_RATIONALE_LENGTH}
+          </p>
+        </div>
+
+        {error !== null && (
+          <p role="alert" className="seal-error">
+            {error}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={submit}
+          disabled={formStatus === "sending"}
+          className="seal-btn"
         >
-          One sentence, max {MAX_RATIONALE_LENGTH} characters
-        </label>
-        <textarea
-          id="seal-rationale"
-          value={rationale}
-          maxLength={MAX_RATIONALE_LENGTH}
-          onChange={(event) => setRationale(event.target.value)}
-          rows={3}
-          className="mt-2 w-full rounded-field border border-line bg-ink p-3 text-bone"
-        />
-        <p className="mt-1 text-right font-mono text-xs text-mute tabular-nums">
-          {rationale.length} / {MAX_RATIONALE_LENGTH}
-        </p>
+          {formStatus === "sending" ? "Sealing" : "Seal forecast"}
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={submit}
-        disabled={status === "sending"}
-        className="h-11 w-full rounded-field border border-bone bg-transparent font-mono text-sm uppercase text-bone hover:border-seal hover:text-seal disabled:opacity-50"
-      >
-        {status === "sending" ? "Sealing" : "Seal"}
-      </button>
-
-      {error !== null ? (
-        <p role="alert" className="font-mono text-sm text-seal">
-          {error}
-        </p>
-      ) : null}
-    </div>
-    <SignInModal open={signInOpen} onClose={() => setSignInOpen(false)} />
+      <SignInModal
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+      />
     </>
   );
 }
