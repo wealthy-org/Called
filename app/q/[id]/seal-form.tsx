@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { newSalt } from "@/lib/crypto-box";
+import { ReceiptBlock, type SealedReceiptData } from "./receipt-slip";
 
 export const MIN_PERCENT = 1;
 export const MAX_PERCENT = 99;
@@ -11,12 +12,30 @@ export function percentToProbability(percent: number): number {
   return percent / 100;
 }
 
+function asRecord(body: unknown): Record<string, unknown> | null {
+  return typeof body === "object" && body !== null
+    ? (body as Record<string, unknown>)
+    : null;
+}
+
+function readString(body: unknown, key: string): string {
+  const record = asRecord(body);
+  const value = record?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+function readNumber(body: unknown, key: string): number {
+  const record = asRecord(body);
+  const value = record?.[key];
+  return typeof value === "number" ? value : Number.NaN;
+}
+
 export function SealForm({ questionId }: { questionId: string }) {
   const [percent, setPercent] = useState(50);
   const [rationale, setRationale] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [commit, setCommit] = useState<string | null>(null);
+  const [sealed, setSealed] = useState<SealedReceiptData | null>(null);
 
   async function submit() {
     setStatus("sending");
@@ -40,19 +59,20 @@ export function SealForm({ questionId }: { questionId: string }) {
 
       if (!response.ok) {
         const message =
-          typeof body === "object" && body !== null && "error" in body
-            ? String((body as { error: unknown }).error)
-            : `seal failed with status ${response.status}`;
+          readString(body, "error") ||
+          `seal failed with status ${response.status}`;
         setStatus("idle");
         setError(message);
         return;
       }
 
-      setCommit(
-        typeof body === "object" && body !== null && "commit" in body
-          ? String((body as { commit: unknown }).commit)
-          : "",
-      );
+      setSealed({
+        sealId: readString(body, "sealId"),
+        commit: readString(body, "commit"),
+        salt: readString(body, "salt") || salt,
+        recordIndex: readNumber(body, "recordIndex"),
+        receiptId: readString(body, "receiptId"),
+      });
       setStatus("done");
     } catch {
       setStatus("idle");
@@ -60,13 +80,8 @@ export function SealForm({ questionId }: { questionId: string }) {
     }
   }
 
-  if (status === "done") {
-    return (
-      <div className="border border-line p-4">
-        <p className="font-mono text-xs uppercase text-mute">Sealed</p>
-        <p className="mt-2 font-mono text-sm break-all text-seal">{commit}</p>
-      </div>
-    );
+  if (status === "done" && sealed !== null) {
+    return <ReceiptBlock data={sealed} />;
   }
 
   return (
