@@ -34,7 +34,12 @@ export type ManualResult =
       proposal: ManualProposal;
       auditEntry: ManualAuditEntry;
     }
-  | { ok: false; reason: ManualProposalError; message: string };
+  | {
+      ok: false;
+      reason: ManualProposalError;
+      message: string;
+      proposal?: ManualProposal;
+    };
 
 export interface ManualAuditEntry {
   questionId: string;
@@ -55,7 +60,15 @@ export interface ManualInput {
   reason: unknown;
 }
 
-export function validateManualInput(input: ManualInput): ManualResult | null {
+export type ManualInputError = {
+  ok: false;
+  reason: ManualProposalError;
+  message: string;
+};
+
+export function validateManualInput(
+  input: ManualInput,
+): ManualInputError | null {
   if (typeof input.value !== "number" || !Number.isFinite(input.value)) {
     return {
       ok: false,
@@ -143,6 +156,7 @@ export function approve(
       ok: false,
       reason: "not_enough_approvals",
       message: `${distinctApprovers(updated)} of ${MIN_APPROVALS} approvals so far`,
+      proposal: updated,
     };
   }
 
