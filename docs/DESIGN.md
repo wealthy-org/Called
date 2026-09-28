@@ -969,12 +969,11 @@ Wordmark:
 Called
 ```
 
-The wordmark is a custom geometric construction, not a typeface. Source of
-truth is `brand/SPEC.md`; SVG in `brand/wordmark/`, inline React in
-`components/brand/called-mark.tsx`. The `C` is the sealed-arc mark construction
-at wordmark scale, so the mark and the name share one idea.
+The wordmark is the Doto typeface set from the supplied logo mark. Source of
+truth is `public/called-logo-no-bg.png`; the header, footer, icons and share
+card are generated from it with `npm run gen:icons`.
 
-Legacy token, superseded:
+Wordmark:
 
 ```text
 Doto

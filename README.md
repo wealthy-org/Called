@@ -85,8 +85,7 @@ verifying, and every session is signed out.
 | `npm run db:studio` | Drizzle Studio. |
 | `npm run db:seed` | Wipe and insert dev data. Refuses to run when `NODE_ENV=production`. |
 | `npm run gen:env` | Print fresh values for the secret env vars. |
-| `npm run gen:icons` | Rasterise the app icons and PNGs from the `brand/` SVG geometry. |
-| `npm run gen:brand` | Write the `brand/` SVG identity system. |
+| `npm run gen:icons` | Rasterise the app icons and PNGs from `public/called-logo-no-bg.png`. |
 
 ## Layout
 
@@ -100,10 +99,9 @@ verifying, and every session is signed out.
 - `assets/fonts/` — fonts embedded in the OG share card.
 - `workers/cron/` — the Cloudflare Worker that drives the cron schedule. Excluded
   from `tsconfig.json` and ESLint; deploy with `cd workers/cron; npx wrangler deploy`.
-- `public/called-logo.png` / `called-mark.png` — rasterised brand assets. Generated with
-  `npm run gen:icons`; do not edit them by hand.
-- `brand/` — the identity system: SVG geometry, lockups, icon ladder, `SPEC.md` and
-  `brand-sheet.html`. Source of truth is `lib/brand/`; regenerate with `npm run gen:brand`.
+- `public/called-logo-no-bg.png` — the source mark. `public/called-logo.png` and
+  `called-mark.png` are generated from it with `npm run gen:icons`; do not edit the
+  generated files by hand.
 - `docs/` — product, architecture and design specs.
 
 ## Routes

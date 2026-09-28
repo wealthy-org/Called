@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { CalledLockup } from "@/components/brand/called-mark";
 
 const NAV = [
   ["/questions", "Questions"],
@@ -28,9 +28,17 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
         <Link
           href="/"
           aria-label="Called home"
-          className="mr-4 inline-flex min-h-11 items-center text-bone hover:text-seal"
+          className="mr-4 inline-flex min-h-11 items-center gap-2 text-bone"
         >
-          <CalledLockup kind="compact" height={30} />
+          <Image
+            src="/called-mark.png"
+            alt=""
+            width={28}
+            height={28}
+            priority
+            className="h-7 w-7"
+          />
+          <span className="font-display text-lg font-bold">Called</span>
         </Link>
         {items.map(([href, label]) => (
           <Link
