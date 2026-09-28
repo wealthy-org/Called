@@ -49,6 +49,20 @@ body {
   outline-offset: 2px;
 }
 
+@keyframes calib-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.calibration-curve {
+  stroke-dashoffset: 1;
+  animation: calib-draw 1.3s ease forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -57,5 +71,10 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .calibration-curve {
+    stroke-dashoffset: 0;
+    animation: none;
   }
 }
