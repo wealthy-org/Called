@@ -2,14 +2,22 @@ import "server-only";
 
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { forecasters, sealReveals, seals } from "@/db/schema";
+import { forecasters, receipts, sealReveals, seals } from "@/db/schema";
 import { GENESIS_PREV_HASH } from "./hash";
+import { signReceipt, type ReceiptFields } from "./receipt";
 import { recordHash } from "./seal";
 
 const CHAIN_LOCK_KEY = 4_662_333;
 
 export type AppendResult =
-  | { ok: true; sealId: string; commit: string; recordIndex: number; hash: string }
+  | {
+      ok: true;
+      sealId: string;
+      commit: string;
+      recordIndex: number;
+      hash: string;
+      receiptId: string;
+    }
   | { ok: false; reason: "already_sealed" | "unknown_question" };
 
 export interface AppendSealInput {
@@ -24,6 +32,7 @@ export interface AppendSealInput {
   modelVersion: string | null;
   promptHash: string | null;
   kind: "house" | "baseline" | "agent" | "human";
+  receiptSigningKey: string;
 }
 
 export async function ensureForecaster(
@@ -59,7 +68,7 @@ export async function appendSeal(input: AppendSealInput): Promise<AppendResult> 
     return { ok: false, reason: "already_sealed" };
   }
 
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(${CHAIN_LOCK_KEY})`);
 
     const [head] = await tx
@@ -96,8 +105,25 @@ export async function appendSeal(input: AppendSealInput): Promise<AppendResult> 
       throw new Error("seal insert returned no row");
     }
 
-    return { ok: true, sealId: inserted.id, commit: inserted.commit, recordIndex: inserted.recordIndex, hash: inserted.hash } as const;
+    const receiptId = `rcpt-${inserted.id}`;
+    const receiptFields: ReceiptFields = {
+      receiptId,
+      sealId: inserted.id,
+      recordIndex: inserted.recordIndex,
+      commit: inserted.commit,
+      recordHash: inserted.hash,
+      sealedAt: input.sealedAt,
+      questionId: input.questionId,
+      forecasterId: input.forecasterId,
+    };
+    const signature = await signReceipt(input.receiptSigningKey, receiptFields);
+
+    await tx.insert(receipts).values({ id: receiptId, sealId: inserted.id, signature });
+
+    return { ok: true, sealId: inserted.id, commit: inserted.commit, recordIndex: inserted.recordIndex, hash: inserted.hash, receiptId } as const;
   });
+
+  return result;
 }
 
 export type AppendRevealResult =

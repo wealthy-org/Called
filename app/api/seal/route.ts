@@ -106,6 +106,7 @@ export async function POST(request: Request) {
     commit,
     payloadCiphertext,
     sealedAt: new Date(),
+    receiptSigningKey: env.RECEIPT_SIGNING_KEY,
   });
 
   if (!result.ok) {
@@ -121,6 +122,7 @@ export async function POST(request: Request) {
       commit: result.commit,
       recordIndex: result.recordIndex,
       hash: result.hash,
+      receiptId: result.receiptId,
     },
     { status: 201 },
   );
