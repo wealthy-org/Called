@@ -16,6 +16,7 @@ Fresh `create-next-app` boilerplate + full product spec in `docs/`. Code does no
 - `docs/ARCHITECTURE.md` — stack, endpoints, cron, schema.
 - `docs/DESIGN.md` — colors, type, motion, a11y; prototype HTML is visual reference.
 - `docs/Called_Brief.md` — condensed duplicate of above; check PRD/ARCHITECTURE on conflict.
+- `docs/TASKS.md` — 67 granular tasks (T-001–T-067) per PRD §24 phases; work from here, not raw PRD.
 - Build order: PRD §24 (foundation → seal/ledger/receipt → settle → scoring → Cassandra/BYOK → anchor → homepage).
 
 ## Current code
