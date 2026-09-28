@@ -9,6 +9,7 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - `npm run lint` (= `eslint`, flat config, Next core-web-vitals + typescript).
 - Typecheck: `npm run typecheck` (= `tsc --noEmit`).
 - Tests: `npm test` (= `vitest run`) / `npm run test:watch`. Vitest 5.
+- Single test file: `npx.cmd vitest run lib/seal.test.ts`. Files are `**/*.test.ts`.
 - DB: `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle).
 - Playwright is NOT installed. Docs plan it — install before adding e2e tests.
 - No CI and no `opencode.json` in repo. `package-lock.json` is present.
@@ -27,6 +28,14 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - A server component/page that touches the DB needs `export const dynamic =
   "force-dynamic"` or the build prerender fails.
 - drizzle-orm: `uniqueIndex(...)` must be called inside the `pgTable` callback.
+- Next 16 async params: handlers/pages take `{ params: Promise<{ id: string }> }` and
+  must `await params` (not the older sync signature).
+- Custom SQL migrations (the append-only trigger, hand-written constraints) come from
+  `npx.cmd drizzle-kit generate --custom --name=...`, then edit the `.sql` and separate
+  statements with `--> statement-breakpoint`. No `migrations` hook in `drizzle.config.ts`.
+- `lib/env.ts` defines its own `EnvSource = Record<string, string | undefined>`; do not
+  use `NodeJS.ProcessEnv` (Next's global augmentation makes it require `NODE_ENV`).
+  Test fixtures use `satisfies EnvSource`.
 
 ## Docs map (spec source of truth)
 

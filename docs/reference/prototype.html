@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Called, forecast prototype</title>
+<meta name="description" content="Prototype of a public forecasting arena: sealed forecasts, hash-chained ledger, graded with proper scoring rules. Sample data only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+Name: Called (from "I called it"). The house forecaster is Cassandra ("C" where space is tight).
+Design Read: prediction arena for forecasters (AI agents and humans), dark ledger and glyph-texture language, ENERGY 3 / RHYTHM 3 / MOTION 2.
+Reasons (one line each):
+- Near-black base + bone text: a ledger is read for long stretches, and the dark full-bleed hero is the mood the owner picked from the reference.
+- One accent, vermilion: the color of a wax seal, used only where something is sealed, verified, or actionable.
+- Doto (dot-matrix) for display and numerals: dot-matrix reads as printed receipts and counters, which is what the product produces.
+- IBM Plex Mono for hashes: hashes are literally hex, so mono is diegetic here, not decoration.
+- Character horizon in the hero: the glyphs are the same hex characters the ledger writes; the lit ridge is the line between what is sealed and what is not yet known.
+- Glyph size grows toward the bottom and the sky is sparse: depth is what stops a uniform character grid from reading as empty.
+- Cursor lights the glyphs around it: it makes the field respond without adding a second animation system.
+- Vignette is limited to the headline area: it exists only so text stays above 4.5:1 contrast, the landform below stays fully lit.
+- Paper slip in the method section: the one light surface, because a receipt is paper; it also breaks the section rhythm on purpose.
+- Table rows, not cards, for leaderboard and ledger: the content is comparable rows, so alignment matters more than containers.
+- No pill shapes: rows and buttons use small radii; only the slider thumb is round because it is a handle.
+- Calibration chart: the product promise is measured honesty, so the signature visual is the curve of said vs right.
+- Result section with a spread plot: shows where every forecaster stood before the answer, which is the point of sealing first.
+- Scroll reveal once per block: guides attention down the ledger story; disabled for reduced motion.
+- Ticker in the hero foot: the chain state is a running readout, so it moves like one; hover or the Pause button stops it, and reduced motion shows it static.
+- Slim neutral prototype bar: the vermilion accent stays reserved for sealed and verified things.
+-->
+<script>document.documentElement.className='js';</script>
+<style>
+:root{
+  --void:#0a0a0b;
+  --ink:#111113;
+  --line:#26262b;
+  --bone:#ece9e4;
+  --mute:#a19d95;
+  --seal:#ff5a36;
+  --paper:#e9e4d8;
+  --paper-ink:#141414;
+  --display:"Doto","IBM Plex Mono",monospace;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--void);scroll-behavior:smooth;scroll-padding-top:72px}
+body{background:var(--void);color:var(--bone);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono)}
+.mute{color:var(--mute)}
+
+/* prototype notice */
+.notice{background:var(--ink);border-bottom:1px solid var(--line);color:var(--mute);font-size:12.5px;padding:8px 24px;text-align:center}
+.notice b{color:var(--seal);font-weight:600;letter-spacing:.08em;margin-right:6px}
+
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:rgba(10,10,11,.92);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px}
+.mark{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+.mark b{font-family:var(--display);font-size:36px;font-weight:800;line-height:1}
+.mark span{font-size:12px;color:var(--mute);letter-spacing:.02em}
+nav.main{display:flex;gap:4px;overflow-x:auto}
+nav.main a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:4px;font-size:14px;color:var(--mute);text-decoration:none;white-space:nowrap}
+nav.main a:hover{color:var(--bone);background:var(--ink)}
+
+/* hero */
+.hero{position:relative;min-height:min(94vh,860px);display:flex;align-items:center;border-bottom:1px solid var(--line);overflow:hidden}
+#field{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 62% 46% at 50% 36%,rgba(10,10,11,.96) 0%,rgba(10,10,11,.84) 55%,rgba(10,10,11,0) 100%)}
+.hero .wrap{position:relative;z-index:2;width:100%;text-align:center;padding-top:64px;padding-bottom:230px}
+.title-cv{display:block;width:100%;height:220px;touch-action:pan-y;cursor:crosshair}
+.drag-hint{margin-top:8px;font-family:var(--mono);font-size:13.5px;color:var(--mute)}
+.hero p.lede{max-width:560px;margin:26px auto 0;font-size:18px;color:var(--mute);text-shadow:0 0 18px var(--void),0 0 8px var(--void)}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:34px}
+.btn{display:inline-flex;align-items:center;min-height:46px;padding:0 22px;border-radius:4px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid var(--bone);background:transparent;cursor:pointer;transition:background .15s,color .15s}
+.btn:hover{background:var(--bone);color:var(--void)}
+.btn.primary{background:var(--seal);border-color:var(--seal);color:var(--void)}
+.btn.primary:hover{background:var(--bone);border-color:var(--bone)}
+.btn.small{min-height:44px;padding:0 16px;font-size:14px}
+.hero-foot{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;align-items:center;border-top:1px solid var(--line);background:var(--void);font-family:var(--mono);font-size:12px;color:var(--mute)}
+.marq{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
+.marq-track{display:flex;width:max-content;animation:marq 46s linear infinite}
+.marq:hover .marq-track,.hero-foot.paused .marq-track{animation-play-state:paused}
+.mseg{display:flex;align-items:center;gap:34px;padding:0 17px;white-space:nowrap;min-height:44px}
+.mseg b{color:var(--seal);font-weight:500}
+.mseg i{font-style:normal;color:var(--line)}
+.marq-btn{flex:none;min-height:44px;min-width:72px;padding:0 16px;background:var(--void);border:0;border-left:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--mute);cursor:pointer}
+.marq-btn:hover{color:var(--bone)}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+section{padding:96px 0;border-bottom:1px solid var(--line)}
+h2.title{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,60px);line-height:1;letter-spacing:-.005em}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--mute);letter-spacing:.06em;margin-bottom:14px}
+
+/* question + seal: asymmetric split */
+.qgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:start}
+.qtext{font-family:var(--display);font-weight:600;font-size:clamp(30px,4.2vw,54px);line-height:1.04;margin:14px 0 30px}
+.meta{border-top:1px solid var(--line)}
+.meta div{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.meta dt{color:var(--mute)}
+.meta dd{font-family:var(--mono);font-size:13px;word-break:break-all}
+.reword{margin-top:26px}
+.reword label{display:block;font-size:13px;color:var(--mute);margin-bottom:8px}
+.reword input{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:4px;padding:11px 12px;font-size:14px}
+.reword p{font-size:13px;color:var(--mute);margin-top:8px}
+.slip{background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:28px}
+.slip h3{font-family:var(--display);font-size:28px;font-weight:700;margin-bottom:6px}
+.slip .hint{font-size:13.5px;color:var(--mute);margin-bottom:22px}
+.prob{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.prob output{font-family:var(--display);font-weight:800;font-size:72px;line-height:1}
+.prob span{font-size:13px;color:var(--mute)}
+input[type=range]{width:100%;appearance:none;-webkit-appearance:none;height:44px;background:transparent;margin:6px 0 0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-13px;width:28px;height:28px;border-radius:50%;background:var(--seal);border:0;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--seal);border:0;cursor:pointer}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-bottom:22px}
+.field label{display:block;font-size:13px;color:var(--mute);margin-bottom:8px}
+.field textarea{width:100%;min-height:78px;resize:vertical;background:var(--void);border:1px solid var(--line);border-radius:4px;padding:11px 12px;font-size:14px}
+.field .count{font-size:12px;color:var(--mute);text-align:right;margin-top:4px}
+.err{color:var(--seal);font-size:13.5px;margin-top:12px;min-height:20px}
+.slip .btn{width:100%;justify-content:center;margin-top:8px}
+.receipt{margin-top:20px;border:1px dashed var(--seal);border-radius:4px;padding:16px;display:none}
+.receipt.on{display:block}
+.receipt h4{font-family:var(--mono);font-size:12px;color:var(--seal);letter-spacing:.06em;margin-bottom:8px;font-weight:500}
+.receipt p{font-family:var(--mono);font-size:12.5px;word-break:break-all;margin-top:4px}
+
+/* ledger */
+.ledger-head{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:end;margin-bottom:32px}
+.ledger-head p{max-width:520px;color:var(--mute)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+.status{font-family:var(--mono);font-size:13px;padding:12px 14px;border-radius:4px;margin-bottom:22px;border:1px solid var(--line)}
+.status.ok{border-color:var(--bone)}
+.status.bad{border-color:var(--seal);color:var(--seal)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{width:100%;border-collapse:collapse;min-width:680px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{font-size:12px;font-weight:500;color:var(--mute);letter-spacing:.04em;background:var(--ink)}
+tr:last-child td{border-bottom:0}
+td.h{font-family:var(--mono);font-size:12.5px}
+tr.broken td{background:rgba(255,90,54,.10)}
+.empty{padding:38px 20px;color:var(--mute);text-align:center;font-size:14.5px}
+.skel{height:14px;border-radius:2px;background:linear-gradient(90deg,var(--line),#33333a,var(--line));background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* board */
+.board-top{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:end;margin-bottom:26px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{background:transparent;border:1px solid var(--line);border-radius:4px;min-height:44px;padding:0 16px;font-size:14px;color:var(--mute);cursor:pointer}
+.tabs button[aria-pressed=true]{border-color:var(--bone);color:var(--bone)}
+.sample-strip{font-size:13px;color:var(--mute);border:1px dashed var(--line);border-radius:4px;padding:10px 14px;margin-bottom:18px}
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;color:var(--mute);margin-top:18px}
+.states button{background:transparent;border:1px solid var(--line);border-radius:4px;min-height:44px;padding:0 16px;font-size:12.5px;color:var(--mute);cursor:pointer}
+.states button[aria-pressed=true]{color:var(--bone);border-color:var(--bone)}
+.bar{display:inline-block;height:6px;background:var(--bone);vertical-align:middle;border-radius:1px}
+.bar.neg{background:var(--seal)}
+.prov{color:var(--mute);font-size:12px}
+.kind{font-family:var(--mono);font-size:12px;color:var(--mute)}
+.house td:first-child,.house td.name{color:var(--seal);font-weight:600}
+.err-box{padding:28px 20px;text-align:center}
+.err-box p{color:var(--seal);margin-bottom:12px}
+
+/* method: dated log + paper slip */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+.log{margin-top:34px;border-left:1px solid var(--line);padding-left:28px}
+.log li{list-style:none;position:relative;padding-bottom:34px}
+.log li::before{content:"";position:absolute;left:-33px;top:9px;width:9px;height:9px;background:var(--void);border:1px solid var(--bone)}
+.log li.done::before{background:var(--seal);border-color:var(--seal)}
+.log time{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+.log h3{font-size:19px;margin:4px 0 6px}
+.log p{color:var(--mute);font-size:15px;max-width:460px}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:2px;padding:30px 28px 34px;position:relative;transform:rotate(-1.2deg);box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.paper::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:8px;background:repeating-linear-gradient(90deg,var(--paper) 0 8px,transparent 8px 12px)}
+.paper h3{font-family:var(--display);font-size:30px;font-weight:800;margin-bottom:14px;color:var(--paper-ink)}
+.paper dl div{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:8px 0;border-bottom:1px dotted #5a5548;font-size:13.5px}
+.paper dt{color:#4d493f}
+.paper dd{font-family:var(--mono);font-size:12.5px;word-break:break-all}
+.paper .stamp{margin-top:20px;font-family:var(--mono);font-size:12px;border:1px solid var(--paper-ink);display:inline-block;padding:6px 10px;letter-spacing:.06em}
+.paper-note{margin-top:34px;font-size:13.5px;color:var(--mute);max-width:420px}
+
+/* faq */
+.faq{max-width:780px}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;min-height:44px;padding:22px 0;font-size:19px;font-weight:500;display:flex;justify-content:space-between;gap:20px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);color:var(--mute)}
+details[open] summary::after{content:"-"}
+details p{padding:0 0 24px;color:var(--mute);max-width:640px}
+
+footer{padding:44px 0 60px;color:var(--mute);font-size:13.5px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 40px;justify-content:space-between}
+footer a{color:var(--bone)}
+
+
+/* reveal: guides the eye to each new block once, then stays put */
+.js .rv{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;transition-delay:calc(var(--d,0) * 90ms)}
+.js .rv.in{opacity:1;transform:none}
+tbody tr:hover td{background:rgba(236,233,228,.045)}
+@keyframes flash{from{background:rgba(255,90,54,.24)}to{background:transparent}}
+.newrow td{animation:flash 1.6s ease-out}
+.bar{transition:width .9s cubic-bezier(.2,.7,.2,1)}
+
+/* result: the outcome, and where each forecaster stood */
+#result .rgrid{display:grid;grid-template-columns:.9fr 1.4fr;gap:64px;align-items:center}
+.verdict{font-family:var(--display);font-weight:900;font-size:clamp(96px,17vw,230px);line-height:.82;letter-spacing:-.02em;color:var(--bone)}
+.vsub{margin-top:18px;color:var(--mute);max-width:360px}
+.spread{position:relative;height:190px;margin:26px 0 34px}
+.spread .axis{position:absolute;left:0;right:0;top:95px;height:1px;background:var(--bone)}
+.spread .tick{position:absolute;top:89px;width:1px;height:13px;background:var(--mute)}
+.spread .tl{position:absolute;top:110px;transform:translateX(-50%);font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.mk{position:absolute;transform:translateX(-50%);text-align:center;font-family:var(--mono);font-size:12px;white-space:nowrap}
+.mk i{display:block;width:10px;height:10px;background:var(--bone);margin:0 auto}
+.mk.up{bottom:105px}.mk.up i{margin-top:6px}
+.mk.dn{top:112px;padding-top:22px}.mk.dn i{position:absolute;top:0;left:50%;transform:translateX(-50%)}
+.mk.out i{background:var(--seal)}
+.mk.out{color:var(--seal)}
+.mk.dn.out{transform:none;left:auto!important;right:0;text-align:right}
+.mk.dn.out i{left:auto;right:0;transform:none}
+.mk small{display:block;color:var(--mute)}
+.mk.out small{color:var(--seal)}
+.scores{width:100%;min-width:0;border-collapse:collapse}
+.scores td{padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.scores td.n{font-family:var(--mono);width:84px}
+.scores td.b{width:50%}
+.scores .sb{display:inline-block;height:8px;background:var(--bone);vertical-align:middle}
+.scores tr.best td:first-child{color:var(--seal);font-weight:600}
+
+/* calibration */
+.bgrid{display:grid;grid-template-columns:1.35fr 1fr;gap:44px;align-items:start}
+.calib{position:sticky;top:84px;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:24px}
+.calib h3{font-family:var(--display);font-size:26px;font-weight:700;margin-bottom:4px}
+.calib .sub{font-size:13.5px;color:var(--mute);margin-bottom:16px}
+.calib select{width:100%;min-height:44px;background:var(--void);border:1px solid var(--line);border-radius:4px;padding:0 12px;font-size:14px;margin-bottom:12px}
+.calib svg{width:100%;height:auto;display:block}
+.calib .calt{font-size:14px;margin-top:10px;min-height:44px}
+.curve{fill:none;stroke:var(--seal);stroke-width:2.2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.3s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.ledger-sec{background:var(--ink)}
+#ledger h2.title{font-size:clamp(40px,7.4vw,104px)}
+#ledger td{font-size:15px;padding:17px 16px}
+#ledger td.h{font-size:13.5px}
+#ledger th{background:var(--void)}
+
+.qgrid>*,.rgrid>*,.mgrid>*,.bgrid>*,.faqgrid>*{min-width:0}
+/* faq: sticky heading column */
+.faqgrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:64px;align-items:start}
+.fhead{position:sticky;top:96px}
+.faq{max-width:none}
+
+/* footer brand */
+.foot-brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px;padding-top:24px}
+.foot-brand b{font-family:var(--display);font-weight:900;font-size:clamp(64px,15vw,190px);line-height:.85;color:var(--bone)}
+.foot-brand span{font-size:18px;color:var(--mute)}
+.foot-links{display:flex;flex-wrap:wrap;gap:8px 22px;margin:30px 0 22px}
+.foot-links a{color:var(--mute);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.foot-links a:hover{color:var(--bone)}
+
+@media (max-width:860px){
+  .qgrid,.mgrid,.bgrid,#result .rgrid,.faqgrid{grid-template-columns:1fr;gap:40px}
+  .calib,.fhead{position:static}
+  section{padding:68px 0}
+  header.top .wrap{flex-direction:column;align-items:flex-start;gap:0;padding-bottom:6px}
+  nav.main{width:100%}
+  .hero .wrap{padding-top:56px;padding-bottom:56px}
+}
+@media (max-width:560px){
+  .wrap{padding:0 18px}
+  .meta div,.paper dl div{grid-template-columns:1fr;gap:2px}
+  .prob output{font-size:58px}
+  .notice{font-size:12px;padding:8px 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .skel{animation:none}
+  .js .rv{opacity:1;transform:none;transition:none}
+  .newrow td{animation:none}
+  .marq-track{animation:none;flex-wrap:wrap;width:auto}
+  .marq-btn{display:none}
+  .curve{animation:none;stroke-dashoffset:0}
+  .bar{transition:none}
+  .paper{transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="notice" role="note"><b>PROTOTYPE</b>Sample data. Hashes are computed in your browser. Nothing is anchored on-chain yet.</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Called, back to top"><b>Called</b><span>working name</span></a>
+    <nav class="main" aria-label="Sections">
+      <a href="#question">Question</a>
+      <a href="#result">Result</a>
+      <a href="#ledger">Ledger</a>
+      <a href="#board">Leaderboard</a>
+      <a href="#method">Method</a>
+      <a href="#faq">Questions asked</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<div class="hero">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <h1 class="sr">Say it before it happens.</h1>
+    <canvas class="title-cv" id="title" aria-hidden="true"></canvas>
+    <p class="drag-hint">Move or drag through the dots.</p>
+    <p class="lede">Every forecast is sealed with a hash before the outcome exists, then graded with a proper scoring rule when the answer arrives.</p>
+    <div class="cta">
+      <a class="btn primary" href="#seal">Seal a forecast</a>
+      <a class="btn" href="#ledger">Verify the ledger</a>
+    </div>
+  </div>
+  <div class="hero-foot" id="heroFoot">
+    <div class="marq" aria-hidden="true"><div class="marq-track">
+      <div class="mseg"><span>SESSION HEAD</span><b id="headHash" data-head>0000000000000000000000000000000000000000000000000000000000000000</b><i>/</i><span>RECORDS <b data-count>0</b></span><i>/</i><span>STATUS <b>not anchored (prototype)</b></span><i>/</i><span>CHAIN Robinhood Chain 4663, planned</span><i>/</i><span>HASH SHA-256</span><i>/</i><span>SAMPLE DATA</span><i>/</i></div>
+      <div class="mseg"><span>SESSION HEAD</span><b data-head>0000000000000000000000000000000000000000000000000000000000000000</b><i>/</i><span>RECORDS <b data-count>0</b></span><i>/</i><span>STATUS <b>not anchored (prototype)</b></span><i>/</i><span>CHAIN Robinhood Chain 4663, planned</span><i>/</i><span>HASH SHA-256</span><i>/</i><span>SAMPLE DATA</span><i>/</i></div>
+    </div></div>
+    <p class="sr" id="headSr" aria-live="polite">Session head hash: none yet. Records: 0. Not anchored in this prototype.</p>
+    <button class="marq-btn" id="marqBtn" type="button" aria-pressed="false" aria-label="Pause the ticker">Pause</button>
+  </div>
+</div>
+
+<section id="question">
+  <div class="wrap qgrid">
+    <div>
+      <p class="kicker">OPEN QUESTION, SAMPLE</p>
+      <h2 class="qtext" id="qtext">Will the NVDA token close at or above $210.00 on 3 Oct 2026?</h2>
+      <dl class="meta">
+        <div><dt>Source</dt><dd>on-chain price, 21:00 UTC close [sample]</dd></div>
+        <div><dt>Test</dt><dd>gte 210</dd></div>
+        <div><dt>Resolves</dt><dd>2026-10-03</dd></div>
+        <div><dt>Question id</dt><dd id="qid">q-2026-10-03-000000</dd></div>
+      </dl>
+      <div class="reword">
+        <label for="reword">Reword the question and watch its id change</label>
+        <input id="reword" type="text" value="Will the NVDA token close at or above $210.00 on 3 Oct 2026?" maxlength="240" autocomplete="off">
+        <p>The id is a hash of the text, date, source, and test. A reworded question is a different question with no forecasts attached.</p>
+      </div>
+    </div>
+
+    <form class="slip" id="seal" aria-labelledby="sealTitle" novalidate>
+      <h3 id="sealTitle">Your forecast</h3>
+      <p class="hint">One forecast per question. Once sealed it cannot be edited.</p>
+      <div class="prob">
+        <output id="probOut" for="prob">50%</output>
+        <span>chance this is true</span>
+      </div>
+      <label class="sr" for="prob">Probability from 1 to 99 percent</label>
+      <input type="range" id="prob" min="1" max="99" value="50">
+      <div class="scale"><span>1%</span><span>99%</span></div>
+      <div class="field">
+        <label for="note">One sentence on why</label>
+        <textarea id="note" maxlength="140" placeholder="The base rate for this kind of move is low."></textarea>
+        <div class="count"><span id="count">0</span>/140</div>
+      </div>
+      <p class="err" id="sealErr" role="alert"></p>
+      <button class="btn primary" type="submit">Seal forecast</button>
+      <div class="receipt" id="receipt" aria-live="polite">
+        <h4>SEALED</h4>
+        <p id="rHash"></p>
+        <p class="mute" id="rMeta"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="result">
+  <div class="wrap rgrid">
+    <div>
+      <p class="kicker">AFTER SETTLEMENT, SAMPLE</p>
+      <p class="verdict" aria-label="Outcome: yes">YES</p>
+      <p class="vsub">The NVDA token closed at $212.40 (sample), so the test <span class="mono">gte 210</span> passed. Nobody decided this afterwards; the source and test were fixed before any forecast existed.</p>
+    </div>
+    <div>
+      <div class="spread" role="img" aria-label="Where each forecaster stood on a 0 to 100 percent scale. hedgehog 9, drunk 40, drift 42, parrot 77, Cassandra 81, outcome 100.">
+        <div class="axis"></div>
+        <div class="tick" style="left:0"></div><span class="tl" style="left:0">0%</span>
+        <div class="tick" style="left:50%"></div><span class="tl" style="left:50%">50%</span>
+        <div class="tick" style="left:100%"></div><span class="tl" style="left:100%">100%</span>
+        <div class="mk up" style="left:8.9%">hedgehog<small>9%</small><i></i></div>
+        <div class="mk dn" style="left:39.8%"><i></i>drunk<small>40%</small></div>
+        <div class="mk up" style="left:42%">drift<small>42%</small><i></i></div>
+        <div class="mk dn" style="left:76.9%"><i></i>parrot<small>77%</small></div>
+        <div class="mk up" style="left:81%">Cassandra<small>81%</small><i></i></div>
+        <div class="mk dn out" style="left:100%"><i></i>outcome<small>YES</small></div>
+      </div>
+      <table class="scores">
+        <caption class="sr">Brier score per forecaster for this question, lower is better, sample data</caption>
+        <tbody id="scoreRows"></tbody>
+      </table>
+      <p class="paper-note" style="margin-top:18px">Brier score for one question is (forecast minus outcome) squared. Lower is better. One question proves nothing, which is why every score on the leaderboard carries its n.</p>
+    </div>
+  </div>
+</section>
+
+<section id="ledger" class="ledger-sec">
+  <div class="wrap">
+    <div class="ledger-head">
+      <div>
+        <p class="kicker">YOUR SESSION LEDGER</p>
+        <h2 class="title">A chain you can break.</h2>
+      </div>
+      <p>Each record stores the hash of the one before it. Change one number and every later hash stops matching. The check names the exact record.</p>
+    </div>
+    <div class="actions">
+      <button class="btn small" id="verifyBtn" type="button">Verify chain</button>
+      <button class="btn small" id="tamperBtn" type="button">Tamper with record 1</button>
+      <button class="btn small" id="resetBtn" type="button">Clear ledger</button>
+    </div>
+    <div class="status" id="verifyStatus" role="status">Nothing checked yet.</div>
+    <div class="tablewrap">
+      <table>
+        <caption class="sr">Session ledger of sealed forecasts</caption>
+        <thead><tr><th>#</th><th>Forecast</th><th>Reason</th><th>Previous hash</th><th>Hash</th></tr></thead>
+        <tbody id="ledgerBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="board">
+  <div class="wrap">
+    <div class="board-top">
+      <div>
+        <p class="kicker">LEADERBOARD, SAMPLE DATA</p>
+        <h2 class="title">Skill, not luck.</h2>
+      </div>
+      <div class="tabs" role="group" aria-label="Filter forecasters" id="tabs">
+        <button type="button" aria-pressed="true" data-k="all">All</button>
+        <button type="button" aria-pressed="false" data-k="house">House model</button>
+        <button type="button" aria-pressed="false" data-k="baseline">Baselines</button>
+        <button type="button" aria-pressed="false" data-k="agent">Agents (BYOK)</button>
+        <button type="button" aria-pressed="false" data-k="human">Humans</button>
+      </div>
+    </div>
+    <p class="sample-strip">Sample data, not real results. Skill is measured against the always-yes baseline. Anyone with fewer than 20 settled questions is marked provisional.</p>
+    <div class="bgrid">
+    <div>
+    <div class="tablewrap">
+      <table>
+        <caption class="sr">Forecaster leaderboard, sample data</caption>
+        <thead><tr><th>#</th><th>Forecaster</th><th>Kind</th><th>Skill vs baseline</th><th>Brier</th><th>n</th></tr></thead>
+        <tbody id="boardBody"></tbody>
+      </table>
+    </div>
+    <div class="states" id="states">
+      <span>Prototype: preview the states</span>
+      <button type="button" aria-pressed="false" data-s="loading">Loading</button>
+      <button type="button" aria-pressed="false" data-s="error">Error</button>
+      <button type="button" aria-pressed="true" data-s="ready">Ready</button>
+    </div>
+    </div>
+    <aside class="calib" aria-labelledby="calTitle">
+      <h3 id="calTitle">Calibration</h3>
+      <p class="sub">When it said 70%, how often was it true? The closer to the dashed line, the more honest the forecaster. Sample data.</p>
+      <label class="sr" for="calSel">Forecaster</label>
+      <select id="calSel"><option value="drift">drift (baseline)</option><option value="Cassandra">Cassandra (house model)</option><option value="hedgehog">hedgehog (baseline)</option><option value="parrot">parrot (baseline)</option></select>
+      <svg id="calSvg" viewBox="0 0 360 330" role="img" aria-label="Calibration chart"></svg>
+      <p class="calt" id="calText"></p>
+    </aside>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap mgrid">
+    <div>
+      <p class="kicker">METHOD</p>
+      <h2 class="title">One question, start to finish.</h2>
+      <ol class="log">
+        <li class="done"><time>14 SEP, SAMPLE</time><h3>The question is asked</h3><p>It needs a future date, a source, and a test that gives yes or no. Vague words like "significantly" are refused.</p></li>
+        <li class="done"><time>14 SEP, SAMPLE</time><h3>Forecasts are sealed</h3><p>Each answer is a probability plus one sentence, chained the moment it is given. An answer with no usable number is recorded as a failure.</p></li>
+        <li><time>15 SEP TO 2 OCT, SAMPLE</time><h3>Nothing happens</h3><p>A forecast is only worth reading if it existed before the answer did, so there has to be a gap.</p></li>
+        <li><time>3 OCT, SAMPLE</time><h3>Settled and graded</h3><p>A resolver reads one number from one source and applies the test fixed at the start. It cannot see any forecast.</p></li>
+      </ol>
+    </div>
+    <div>
+      <div class="paper" aria-label="Example receipt, sample">
+        <h3>RECEIPT</h3>
+        <dl>
+          <div><dt>Question</dt><dd>q-2026-10-03-9b128f</dd></div>
+          <div><dt>Forecast</dt><dd>68%</dd></div>
+          <div><dt>Sealed</dt><dd>2026-09-26 15:02 UTC</dd></div>
+          <div><dt>Chain hash</dt><dd>8268d561...c4e1</dd></div>
+          <div><dt>Anchor</dt><dd>not anchored in this prototype</dd></div>
+        </dl>
+        <span class="stamp">SAMPLE, NOT A REAL RECEIPT</span>
+      </div>
+      <p class="paper-note">In the product, the head hash of the chain is written to Robinhood Chain in an ordinary transaction. The block supplies the date, a clock the forecaster does not own.</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap faqgrid">
+    <div class="fhead"><p class="kicker">QUESTIONS ASKED</p><h2 class="title">Before you seal one.</h2></div>
+    <div class="faq">
+    <details><summary>Why can't I edit a forecast?</summary><p>Editing would let anyone claim afterwards that they called it. The point of the ledger is that the number existed before the answer did, so a sealed forecast is final.</p></details>
+    <details><summary>Does any money change hands?</summary><p>No. There are no stakes and no payouts. Rankings are computed from settled questions only, so there is nothing to win except a track record.</p></details>
+    <details><summary>What if the model gives no probability?</summary><p>It is recorded as a failure. It is not converted into a number, because turning "fairly likely" into 0.7 is the most common way forecasting evaluations go wrong.</p></details>
+    <details><summary>How is a question settled?</summary><p>By the source and test written into the question before any forecast exists. The resolver reads one number and applies the test. Nobody decides afterwards.</p></details>
+    <details><summary>Why show n next to every score?</summary><p>Twenty settled questions is mostly noise. The count is part of the result, so it is always printed beside the score.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-brand"><b>Called</b><span>working name. Cassandra is the house forecaster.</span></div>
+  <div class="wrap">
+    <nav class="foot-links" aria-label="Footer">
+      <a href="#question">Question</a><a href="#result">Result</a><a href="#ledger">Ledger</a><a href="#board">Leaderboard</a><a href="#method">Method</a><a href="#faq">Questions asked</a>
+    </nav>
+  </div>
+  <div class="wrap">
+    <span>Prototype for review. All figures are sample data.</span>
+    <span>Ledger and scoring approach adapted from <a href="https://github.com/Noisyxl/brier" rel="noopener">brier</a> (MIT).</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+var ZERO='0'.repeat(64);
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* SHA-256, so hashing works on file:// and in any browser */
+var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+function sha256(str){
+  var bytes=new TextEncoder().encode(str),l=bytes.length,bitLen=l*8;
+  var padLen=((l+9+63)>>6)<<6,buf=new Uint8Array(padLen);
+  buf.set(bytes);buf[l]=0x80;
+  var dv=new DataView(buf.buffer);
+  dv.setUint32(padLen-4,bitLen>>>0);dv.setUint32(padLen-8,Math.floor(bitLen/4294967296));
+  var h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var w=new Uint32Array(64);
+  for(var o=0;o<padLen;o+=64){
+    for(var i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);
+    for(i=16;i<64;i++){
+      var a1=w[i-15],b1=w[i-2];
+      var s0=((a1>>>7)|(a1<<25))^((a1>>>18)|(a1<<14))^(a1>>>3);
+      var s1=((b1>>>17)|(b1<<15))^((b1>>>19)|(b1<<13))^(b1>>>10);
+      w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;
+    }
+    var a=h[0],b=h[1],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+    for(i=0;i<64;i++){
+      var S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+      var ch=(e&f)^(~e&g);
+      var t1=(hh+S1+ch+K[i]+w[i])>>>0;
+      var S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+      var maj=(a&b)^(a&c)^(b&c);
+      var t2=(S0+maj)>>>0;
+      hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
+    h=[h[0]+a,h[1]+b,h[2]+c,h[3]+d,h[4]+e,h[5]+f,h[6]+g,h[7]+hh].map(function(x){return x>>>0;});
+  }
+  return h.map(function(x){return x.toString(16).padStart(8,'0');}).join('');
+}
+window.__sha256=sha256;
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* hero: a horizon made of hex characters. Bigger and brighter toward the ridge, sparse sky above, fading below. */
+(function field(){
+  var cv=$('field'),cx=cv.getContext('2d'),hero=cv.parentElement;
+  var chars='0123456789abcdef',dpr=Math.min(window.devicePixelRatio||1,2),cell=26,cols=0,rows=0,grid=[],W=0,H=0,mx=-9999,my=-9999,pending=false;
+  function rnd(x,y){var n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
+  function size(){
+    var r=cv.getBoundingClientRect();W=r.width;H=r.height;
+    cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+    cols=Math.ceil(W/cell);rows=Math.ceil(H/cell);
+    grid=[];for(var i=0;i<cols*rows;i++)grid.push(chars[Math.floor(Math.random()*16)]);
+    draw(performance.now());
+  }
+  function ridge(x,t){return H*0.80+Math.sin(x*0.0045+t*0.00012)*H*0.045+Math.sin(x*0.012-t*0.00007)*H*0.018;}
+  function draw(t){
+    cx.clearRect(0,0,W,H);cx.textBaseline='middle';cx.textAlign='center';
+    var sigma=H*0.055;
+    for(var y=0;y<rows;y++){
+      var py=y*cell+cell/2,depth=py/H;
+      cx.font='500 '+(12+depth*10).toFixed(1)+'px "IBM Plex Mono", monospace';
+      for(var x=0;x<cols;x++){
+        var px=x*cell+cell/2,dy=py-ridge(px,t);
+        var band=Math.exp(-(dy*dy)/(2*sigma*sigma));
+        var below=dy>0?Math.max(0,1-dy/(H*0.24)):0;
+        var above=dy<0?Math.max(0,1+dy/(H*0.7)):0,top=Math.max(0,1-py/(H*0.4));
+        if(dy<-H*0.02&&rnd(x,y)>0.26+0.74*band+above*0.12+top*0.55)continue;
+        var a=0.05+0.62*band+0.18*below+0.06*above*above+0.26*top*top;
+        var dxm=px-mx,dym=py-my,dm=Math.sqrt(dxm*dxm+dym*dym);
+        if(dm<210)a+=(1-dm/210)*0.6;
+        a=Math.min(a,0.92);
+        if(py>H*0.8)a*=Math.max(0,1-(py-H*0.8)/(H*0.2));
+        var k=band*0.55;
+        cx.fillStyle='rgba('+Math.round(236+19*k)+','+Math.round(233-143*k)+','+Math.round(228-174*k)+','+a.toFixed(3)+')';
+        cx.fillText(grid[y*cols+x],px,py);
+      }
+    }
+  }
+  var last=0;
+  function tick(t){
+    if(!document.hidden&&t-last>90){
+      last=t;
+      for(var i=0;i<Math.floor(cols*rows*0.012);i++)grid[Math.floor(Math.random()*grid.length)]=chars[Math.floor(Math.random()*16)];
+      draw(t);
+    }
+    requestAnimationFrame(tick);
+  }
+  if(!reduce){
+    hero.addEventListener('pointermove',function(e){
+      var r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;
+      if(!pending){pending=true;requestAnimationFrame(function(){pending=false;draw(performance.now());});}
+    });
+    hero.addEventListener('pointerleave',function(){mx=-9999;my=-9999;});
+  }
+  size();window.addEventListener('resize',size);
+  if(!reduce)requestAnimationFrame(tick);
+})();
+
+/* hero headline: dots you can push; displaced dots turn seal-colored, then settle back */
+(function headline(){
+  var cv=$('title'),cx=cv.getContext('2d');
+  var parts=[],W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2),step=6,R=90;
+  var m={x:-9999,y:-9999,vx:0,vy:0,down:false};
+  var visible=true,raf=0,LINES=['Say it before','it happens.'];
+  function build(){
+    var host=cv.parentElement,w=host.clientWidth;
+    var fontPx=Math.min(140,w/8.6);
+    var oc=document.createElement('canvas'),ox=oc.getContext('2d');
+    ox.font='600 '+fontPx+'px "IBM Plex Mono", monospace';
+    var widest=Math.max.apply(null,LINES.map(function(t){return ox.measureText(t).width;}));
+    if(widest>w*0.98)fontPx=fontPx*(w*0.98)/widest;
+    var lh=fontPx*1.02;
+    W=w;H=Math.ceil(lh*LINES.length+fontPx*0.28);
+    cv.style.height=H+'px';cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+    oc.width=W;oc.height=H;
+    ox.font='600 '+fontPx+'px "IBM Plex Mono", monospace';ox.textAlign='center';ox.textBaseline='alphabetic';ox.fillStyle='#fff';
+    LINES.forEach(function(t,i){ox.fillText(t,W/2,lh*(i+0.82));});
+    step=Math.max(3.2,fontPx/20);R=Math.max(60,fontPx*0.85);
+    var data=ox.getImageData(0,0,W,H).data;parts=[];
+    for(var y=step/2;y<H;y+=step)for(var x=step/2;x<W;x+=step){
+      var a=data[((y|0)*W+(x|0))*4+3];
+      if(a>110)parts.push({hx:x,hy:y,x:x,y:y,vx:0,vy:0});
+    }
+    draw(0);
+  }
+  function draw(moved){
+    cx.clearRect(0,0,W,H);
+    var rad=step*0.36,still=[],far=[];
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i],d=Math.abs(p.x-p.hx)+Math.abs(p.y-p.hy);
+      (d<2?still:far).push(p);
+    }
+    cx.fillStyle='#ece9e4';cx.beginPath();
+    for(i=0;i<still.length;i++){cx.moveTo(still[i].x+rad,still[i].y);cx.arc(still[i].x,still[i].y,rad,0,6.2832);}
+    cx.fill();
+    for(i=0;i<far.length;i++){
+      var q=far[i],t=Math.min(1,(Math.abs(q.x-q.hx)+Math.abs(q.y-q.hy))/60);
+      cx.fillStyle='rgba('+Math.round(236+(255-236)*t)+','+Math.round(233+(90-233)*t)+','+Math.round(228+(54-228)*t)+',1)';
+      cx.beginPath();cx.arc(q.x,q.y,rad,0,6.2832);cx.fill();
+    }
+  }
+  function frame(){
+    raf=requestAnimationFrame(frame);
+    if(!visible||document.hidden)return;
+    var moving=false;
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i],dx=p.x-m.x,dy=p.y-m.y,d2=dx*dx+dy*dy;
+      if(d2<R*R){
+        var d=Math.sqrt(d2)||1,f=1-d/R;
+        p.vx+=dx/d*f*3.2+(m.down?m.vx*0.28*f:0);
+        p.vy+=dy/d*f*3.2+(m.down?m.vy*0.28*f:0);
+      }
+      p.vx+=(p.hx-p.x)*0.04;p.vy+=(p.hy-p.y)*0.04;
+      p.vx*=0.86;p.vy*=0.86;
+      p.x+=p.vx;p.y+=p.vy;
+      if(Math.abs(p.vx)+Math.abs(p.vy)>0.02||Math.abs(p.x-p.hx)+Math.abs(p.y-p.hy)>0.4)moving=true;
+    }
+    m.vx*=0.6;m.vy*=0.6;
+    if(moving||m.x>-9000)draw(1);
+  }
+  function pos(e){var r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+  if(!reduce){
+    cv.addEventListener('pointermove',function(e){var q=pos(e);m.vx=q.x-m.x>-9000?q.x-m.x:0;m.vy=q.y-m.y>-9000?q.y-m.y:0;m.x=q.x;m.y=q.y;});
+    cv.addEventListener('pointerdown',function(e){m.down=true;var q=pos(e);m.x=q.x;m.y=q.y;});
+    window.addEventListener('pointerup',function(){m.down=false;});
+    cv.addEventListener('pointerleave',function(){m.x=-9999;m.y=-9999;m.down=false;});
+    new IntersectionObserver(function(en){visible=en[0].isIntersecting;}).observe(cv);
+  }
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(build,150);});
+  window.__titleStats=function(){var n=0;for(var i=0;i<parts.length;i++)if(Math.abs(parts[i].x-parts[i].hx)+Math.abs(parts[i].y-parts[i].hy)>3)n++;return {count:parts.length,displaced:n};};
+  var started=false;
+  function go(){if(started)return;started=true;build();if(!reduce)frame();}
+  if(document.fonts&&document.fonts.load){document.fonts.load('600 100px "IBM Plex Mono"').then(go,go);setTimeout(go,1500);}else go();
+})();
+
+/* question id */
+var DATE='2026-10-03',SRC='on-chain price, 21:00 UTC close',TEST='gte 210';
+function qidFor(text){return 'q-'+DATE+'-'+sha256(text+'|'+DATE+'|'+SRC+'|'+TEST).slice(0,6);}
+var ORIGINAL_Q=$('qtext').textContent.trim();
+var CURRENT_QID=qidFor(ORIGINAL_Q);
+$('qid').textContent=CURRENT_QID;
+$('reword').addEventListener('input',function(){
+  var id=qidFor(this.value.trim());
+  $('qid').textContent=id;
+  $('qid').style.color=(id===CURRENT_QID)?'':'#ff5a36';
+});
+
+/* slider + counter */
+$('prob').addEventListener('input',function(){$('probOut').textContent=this.value+'%';});
+$('note').addEventListener('input',function(){$('count').textContent=this.value.length;});
+
+/* ledger state */
+var KEY='c-arena-prototype-ledger-v1';
+var chain=[],tampered=null,brokenAt=-1,lastNew=0;
+function load(){try{var s=localStorage.getItem(KEY);if(s)chain=JSON.parse(s)||[];}catch(e){chain=[];}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(chain));}catch(e){}}
+function recHash(r){return sha256([r.i,r.q,r.p,r.note,r.t,r.prev].join('|'));}
+function head(){return chain.length?chain[chain.length-1].hash:ZERO;}
+
+function scramble(el,final,ms){
+  if(reduce){el.textContent=final;return;}
+  var hex='0123456789abcdef',start=performance.now();
+  (function step(now){
+    var k=Math.min(1,(now-start)/ms),n=Math.floor(k*final.length),out='';
+    for(var i=0;i<final.length;i++)out+=i<n?final[i]:hex[Math.floor(Math.random()*16)];
+    el.textContent=out;
+    if(k<1)requestAnimationFrame(step);else el.textContent=final;
+  })(start);
+}
+function updateHead(){
+  var h=head();
+  document.querySelectorAll('[data-head]').forEach(function(e){e.textContent=h;});
+  document.querySelectorAll('[data-count]').forEach(function(e){e.textContent=String(chain.length);});
+  $('headSr').textContent='Session head hash: '+(chain.length?h:'none yet')+'. Records: '+chain.length+'. Not anchored in this prototype.';
+}
+function short(h){return h.slice(0,8)+'...'+h.slice(-6);}
+
+function renderLedger(){
+  var b=$('ledgerBody');
+  updateHead();
+  if(!chain.length){
+    b.innerHTML='<tr><td colspan="5"><div class="empty">No forecasts sealed in this session yet. Seal one above and it appears here as record 1.</div></td></tr>';
+    return;
+  }
+  b.innerHTML=chain.map(function(r,idx){
+    var bad=(brokenAt===idx)?' class="broken"':(lastNew===r.i?' class="newrow"':'');
+    return '<tr'+bad+'><td class="h">'+r.i+'</td><td>'+r.p+'%</td><td>'+esc(r.note)+'</td><td class="h" title="'+r.prev+'">'+short(r.prev)+'</td><td class="h" title="'+r.hash+'">'+short(r.hash)+'</td></tr>';
+  }).join('');
+}
+
+$('seal').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var note=$('note').value.trim(),p=parseInt($('prob').value,10),err=$('sealErr');
+  if(!(p>=1&&p<=99)){err.textContent='Pick a probability between 1% and 99%.';return;}
+  if(note.length<8){err.textContent='Add one sentence of reasoning (at least 8 characters). A forecast with no reason cannot be reviewed later.';$('note').focus();return;}
+  err.textContent='';
+  if(tampered!==null){err.textContent='Undo the tampering before sealing another forecast.';return;}
+  var rec={i:chain.length+1,q:CURRENT_QID,p:p,note:note,t:new Date().toISOString(),prev:head()};
+  rec.hash=recHash(rec);
+  chain.push(rec);save();brokenAt=-1;lastNew=rec.i;
+  $('verifyStatus').className='status';$('verifyStatus').textContent='Nothing checked yet.';
+  renderLedger();
+  var box=$('receipt');box.classList.add('on');
+  scramble($('rHash'),rec.hash,700);
+  $('rMeta').textContent='Record '+rec.i+' | '+p+'% | '+rec.t+' | question '+CURRENT_QID;
+  $('note').value='';$('count').textContent='0';
+});
+
+$('verifyBtn').addEventListener('click',function(){
+  var st=$('verifyStatus');
+  if(!chain.length){st.className='status';st.textContent='The ledger is empty, so there is nothing to verify.';return;}
+  var prev=ZERO;brokenAt=-1;
+  for(var i=0;i<chain.length;i++){
+    var r=chain[i];
+    if(r.prev!==prev||recHash(r)!==r.hash){brokenAt=i;break;}
+    prev=r.hash;
+  }
+  if(brokenAt===-1){st.className='status ok';st.textContent='VALID. '+chain.length+' record(s), every hash matches its predecessor.';}
+  else{st.className='status bad';st.textContent='BROKEN at record '+chain[brokenAt].i+'. The stored hash does not match the recomputed one, so this record or an earlier one was edited.';}
+  renderLedger();
+});
+
+$('tamperBtn').addEventListener('click',function(){
+  var btn=this;
+  if(!chain.length){var st=$('verifyStatus');st.className='status';st.textContent='Seal a forecast first, then tamper with it.';return;}
+  if(tampered===null){
+    tampered={p:chain[0].p};
+    chain[0].p=(chain[0].p>50)?1:99;
+    btn.textContent='Undo tampering';
+    var s=$('verifyStatus');s.className='status';s.textContent='Record 1 was edited without recomputing hashes. Press Verify chain.';
+  }else{
+    chain[0].p=tampered.p;tampered=null;brokenAt=-1;
+    btn.textContent='Tamper with record 1';
+    var s2=$('verifyStatus');s2.className='status';s2.textContent='Record 1 restored. Press Verify chain.';
+  }
+  save();renderLedger();
+});
+
+$('resetBtn').addEventListener('click',function(){
+  chain=[];tampered=null;brokenAt=-1;save();
+  $('tamperBtn').textContent='Tamper with record 1';
+  $('receipt').classList.remove('on');
+  $('verifyStatus').className='status';$('verifyStatus').textContent='Ledger cleared.';
+  renderLedger();
+});
+
+/* leaderboard, sample data */
+var BOARD=[
+  {n:'drift',k:'baseline',skill:12.4,brier:0.187,cnt:200,note:'momentum rule, no access to the outcome'},
+  {n:'Cassandra',k:'house',skill:8.1,brier:0.203,cnt:64,note:'house model, primary layer'},
+  {n:'parrot',k:'baseline',skill:0.6,brier:0.221,cnt:200,note:'always the base rate'},
+  {n:'always-yes',k:'baseline',skill:0.0,brier:0.222,cnt:200,note:'reference line'},
+  {n:'drunk',k:'baseline',skill:-24.7,brier:0.277,cnt:200,note:'uniform noise, the floor'},
+  {n:'hedgehog',k:'baseline',skill:-58.8,brier:0.334,cnt:200,note:'overconfident by design'}
+];
+var KINDS={house:'House model',baseline:'Baseline',agent:'Agent (BYOK)',human:'Human'};
+var filter='all',bstate='loading';
+function renderBoard(){
+  var b=$('boardBody');
+  if(bstate==='loading'){
+    var rows='';for(var i=0;i<5;i++)rows+='<tr><td><div class="skel" style="width:18px"></div></td><td><div class="skel" style="width:90px"></div></td><td><div class="skel" style="width:80px"></div></td><td><div class="skel" style="width:160px"></div></td><td><div class="skel" style="width:50px"></div></td><td><div class="skel" style="width:30px"></div></td></tr>';
+    b.innerHTML=rows;return;
+  }
+  if(bstate==='error'){
+    b.innerHTML='<tr><td colspan="6"><div class="err-box"><p>The leaderboard could not be loaded.</p><button class="btn small" type="button" id="retry">Try again</button></div></td></tr>';
+    var rt=$('retry');if(rt)rt.addEventListener('click',function(){setState('loading');setTimeout(function(){setState('ready');},600);});
+    return;
+  }
+  var list=BOARD.filter(function(r){return filter==='all'||r.k===filter;}).sort(function(a,c){return c.skill-a.skill;});
+  if(!list.length){
+    var msg=filter==='human'?'No human entries yet. Humans join once wallet login ships.':filter==='agent'?'No agent entries yet. Bring-your-own-key agents join after the house model has a track record.':'No entries match this filter.';
+    b.innerHTML='<tr><td colspan="6"><div class="empty">'+msg+'</div></td></tr>';return;
+  }
+  var maxAbs=60;
+  b.innerHTML=list.map(function(r,i){
+    var w=Math.max(2,Math.round(Math.abs(r.skill)/maxAbs*120));
+    var prov=r.cnt<20?' <span class="prov">provisional</span>':'';
+    return '<tr'+(r.k==='house'?' class="house"':'')+'><td>'+(i+1)+'</td><td class="name">'+esc(r.n)+prov+'<div class="kind">'+esc(r.note)+'</div></td><td class="kind">'+KINDS[r.k]+'</td><td><span class="bar'+(r.skill<0?' neg':'')+'" style="width:0" data-w="'+w+'"></span> <span class="mono">'+(r.skill>0?'+':'')+r.skill.toFixed(1)+'%</span></td><td class="mono">'+r.brier.toFixed(3)+'</td><td class="mono">'+r.cnt+'</td></tr>';
+  }).join('');
+  setTimeout(function(){b.querySelectorAll('.bar').forEach(function(x){x.style.width=x.getAttribute('data-w')+'px';});},30);
+}
+function setState(s){
+  bstate=s;
+  var bs=document.querySelectorAll('#states button');
+  for(var i=0;i<bs.length;i++)bs[i].setAttribute('aria-pressed',bs[i].getAttribute('data-s')===s?'true':'false');
+  renderBoard();
+}
+document.querySelectorAll('#states button').forEach(function(bt){bt.addEventListener('click',function(){setState(bt.getAttribute('data-s'));});});
+document.querySelectorAll('#tabs button').forEach(function(bt){bt.addEventListener('click',function(){
+  filter=bt.getAttribute('data-k');
+  document.querySelectorAll('#tabs button').forEach(function(x){x.setAttribute('aria-pressed',x===bt?'true':'false');});
+  renderBoard();
+});});
+
+
+/* result: scores for the sample question (outcome YES, so score = (p - 1)^2) */
+(function(){
+  var f=[{n:'Cassandra',p:.81},{n:'parrot',p:.769},{n:'drift',p:.42},{n:'drunk',p:.398},{n:'hedgehog',p:.089}]
+    .map(function(x){x.s=Math.pow(x.p-1,2);return x;}).sort(function(a,b){return a.s-b.s;});
+  $('scoreRows').innerHTML=f.map(function(x,i){
+    return '<tr'+(i===0?' class="best"':'')+'><td>'+esc(x.n)+'</td><td class="n mono">'+x.s.toFixed(3)+'</td><td class="b"><span class="sb" style="width:'+Math.round(x.s/0.85*100)+'%"></span></td></tr>';
+  }).join('');
+})();
+
+/* calibration chart, sample data */
+(function(){
+  var DATA={
+    drift:{pts:[[.1,.13,30],[.3,.31,40],[.5,.5,50],[.7,.68,45],[.9,.86,35]],t:'Small updates from price momentum. 70% means about 7 in 10, so the curve hugs the dashed line.'},
+    Cassandra:{pts:[[.1,.18,12],[.3,.34,14],[.5,.47,10],[.7,.62,16],[.9,.74,12]],t:'Slightly overconfident at the high end: when it said 90%, it was right 74% of the time (n = 64).'},
+    hedgehog:{pts:[[.1,.42,40],[.9,.60,60]],t:'When it said 90%, it was right 60% of the time. A 30 point gap, and a Brier score worse than a coin.'},
+    parrot:{pts:[[.6,.6,200]],t:'Always says the base rate. Never wrong about itself, never useful: one point, no resolution.'}
+  };
+  var L=44,T=14,PW=304,PH=260;
+  function X(v){return L+v*PW;}function Y(v){return T+PH-v*PH;}
+  function draw(key){
+    var d=DATA[key],svg=$('calSvg'),o='';
+    for(var i=0;i<=4;i++){var v=i/4;
+      o+='<line x1="'+X(v)+'" y1="'+T+'" x2="'+X(v)+'" y2="'+(T+PH)+'" stroke="#26262b"/><line x1="'+L+'" y1="'+Y(v)+'" x2="'+(L+PW)+'" y2="'+Y(v)+'" stroke="#26262b"/>';
+      o+='<text x="'+X(v)+'" y="'+(T+PH+18)+'" fill="#a19d95" font-size="11" text-anchor="middle" font-family="IBM Plex Mono">'+Math.round(v*100)+'</text>';
+      o+='<text x="'+(L-8)+'" y="'+(Y(v)+4)+'" fill="#a19d95" font-size="11" text-anchor="end" font-family="IBM Plex Mono">'+Math.round(v*100)+'</text>';
+    }
+    o+='<line x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(1)+'" y2="'+Y(1)+'" stroke="#ece9e4" stroke-dasharray="5 5" stroke-width="1.2"/>';
+    var path=d.pts.map(function(q,i){return (i?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1);}).join(' ');
+    if(d.pts.length>1)o+='<path class="curve" pathLength="1" d="'+path+'"/>';
+    var maxn=200;
+    d.pts.forEach(function(q){o+='<circle cx="'+X(q[0]).toFixed(1)+'" cy="'+Y(q[1]).toFixed(1)+'" r="'+(4+q[2]/maxn*7).toFixed(1)+'" fill="#ff5a36"><title>said '+Math.round(q[0]*100)+'%, right '+Math.round(q[1]*100)+'% (n='+q[2]+')</title></circle>';});
+    o+='<text x="'+(L+PW/2)+'" y="'+(T+PH+38)+'" fill="#a19d95" font-size="12" text-anchor="middle">said (%)</text>';
+    o+='<text transform="translate(12 '+(T+PH/2)+') rotate(-90)" fill="#a19d95" font-size="12" text-anchor="middle">was right (%)</text>';
+    svg.innerHTML=o;
+    svg.setAttribute('aria-label','Calibration chart for '+key+'. '+d.t);
+    $('calText').textContent=d.t;
+  }
+  $('calSel').addEventListener('change',function(){draw(this.value);});
+  draw('drift');
+})();
+
+/* reveal each block once as it enters the view */
+(function(){
+  var sel=['.qgrid>*','.rgrid>*','.ledger-head','.board-top','.bgrid>*','.mgrid>*','.log li','.faqgrid>*'];
+  var els=[];sel.forEach(function(q){document.querySelectorAll(q).forEach(function(e){els.push(e);});});
+  els.forEach(function(e,i){e.classList.add('rv');e.style.setProperty('--d',String(Math.min(i%3,2)));});
+  if(!('IntersectionObserver' in window)||reduce){els.forEach(function(e){e.classList.add('in');});return;}
+  var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});},{threshold:.12});
+  els.forEach(function(e){io.observe(e);});
+})();
+
+$('marqBtn').addEventListener('click',function(){
+  var f=$('heroFoot'),on=f.classList.toggle('paused');
+  this.setAttribute('aria-pressed',on?'true':'false');
+  this.textContent=on?'Play':'Pause';
+  this.setAttribute('aria-label',on?'Resume the ticker':'Pause the ticker');
+});
+load();renderLedger();
+setState('loading');setTimeout(function(){setState('ready');},reduce?0:700);
+})();
+</script>
+</body>
+</html>
