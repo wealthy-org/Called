@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 interface AdminQuestion {
   id: string;
@@ -253,7 +255,9 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10">
+    <>
+      <SiteHeader />
+      <main className="mx-auto w-full max-w-4xl px-4 py-10">
       <p className="font-mono text-xs uppercase tracking-[0.18em] text-seal">
         Admin
       </p>
@@ -540,5 +544,7 @@ export default function AdminPage() {
         </>
       ) : null}
     </main>
+    <SiteFooter />
+    </>
   );
 }

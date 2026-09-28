@@ -33,6 +33,7 @@ function truncateWallet(address: string): string {
 interface SessionUser {
   handle: string | null;
   walletAddress: string | null;
+  isAdmin: boolean;
 }
 
 export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" }) {
@@ -123,7 +124,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                 {walletOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 top-full mt-1 min-w-[160px] rounded-field border border-line bg-ink py-1 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
+                    className="absolute right-0 top-full mt-1 min-w-[180px] rounded-field border border-line bg-ink py-1 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
                   >
                     <Link
                       href="/me"
@@ -133,6 +134,33 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                     >
                       Account
                     </Link>
+                    <Link
+                      href="/me/receipts"
+                      role="menuitem"
+                      onClick={() => setWalletOpen(false)}
+                      className="block px-4 py-3 text-sm text-bone hover:bg-void"
+                    >
+                      My receipts
+                    </Link>
+                    <Link
+                      href="/me/agents"
+                      role="menuitem"
+                      onClick={() => setWalletOpen(false)}
+                      className="block px-4 py-3 text-sm text-bone hover:bg-void"
+                    >
+                      My agents
+                    </Link>
+                    {user?.isAdmin && (
+                      <Link
+                        href="/admin"
+                        role="menuitem"
+                        onClick={() => setWalletOpen(false)}
+                        className="block px-4 py-3 text-sm text-seal hover:bg-void"
+                      >
+                        Admin
+                      </Link>
+                    )}
+                    <div className="my-1 border-t border-line" />
                     <button
                       type="button"
                       role="menuitem"
@@ -207,7 +235,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                 </Link>
               ))}
               {user?.walletAddress && (
-                <div className="mt-4 flex flex-col gap-2">
+                <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4">
                   <p className="font-mono text-xs text-mute">
                     {user.handle ?? truncateWallet(user.walletAddress)}
                   </p>
@@ -218,6 +246,29 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                   >
                     Account
                   </Link>
+                  <Link
+                    href="/me/receipts"
+                    onClick={() => setMobileOpen(false)}
+                    className="block min-h-11 border border-line py-3 text-center text-sm text-bone hover:border-bone"
+                  >
+                    My receipts
+                  </Link>
+                  <Link
+                    href="/me/agents"
+                    onClick={() => setMobileOpen(false)}
+                    className="block min-h-11 border border-line py-3 text-center text-sm text-bone hover:border-bone"
+                  >
+                    My agents
+                  </Link>
+                  {user?.isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="block min-h-11 border border-seal py-3 text-center text-sm text-seal hover:border-bone"
+                    >
+                      Admin
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={() => { setMobileOpen(false); handleSignOut(); }}
