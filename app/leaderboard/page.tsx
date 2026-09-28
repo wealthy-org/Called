@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { LeaderboardSection } from "./leaderboard-section";
+import { CalibrationPanel } from "./calibration-panel";
+import { loadLeaderboardPage } from "./data";
+
+export const metadata: Metadata = {
+  title: "Leaderboard — Called",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function LeaderboardPage() {
+  const data = await loadLeaderboardPage();
+
+  return (
+    <main className="mx-auto w-full max-w-5xl px-4">
+      <div className="lg:grid lg:grid-cols-[1.35fr_1fr] lg:gap-11">
+        <div>
+          <LeaderboardSection />
+        </div>
+        <div>
+          <CalibrationPanel series={data.forecastSeries} />
+        </div>
+      </div>
+      <section className="my-10 rounded-md border border-dashed border-line p-4 text-sm text-mute">
+        Skill is measured against a baseline that always says yes on the same
+        settled questions: skill = (baseline Brier − your Brier) ÷ baseline
+        Brier. Forecasters with fewer than 20 settled answers are shown but not
+        ranked. Unreadable results are marked void and never counted as a
+        success or failure.
+      </section>
+    </main>
+  );
+}
