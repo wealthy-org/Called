@@ -4,9 +4,9 @@ import { anchors, questions, receipts, seals } from "@/db/schema";
 import { serverEnv, type EnvSource } from "@/lib/env";
 import { receiptPublicKey, verifyReceipt } from "@/lib/receipt";
 
-export const dynamic = "force-dynamic";
+export { explorerTxLink } from "@/lib/explorer";
 
-const EXPLORER_BASE = "https://explorer.testnet.chain.robinhood.com";
+export const dynamic = "force-dynamic";
 
 export interface ReceiptPageData {
   receiptId: string;
@@ -113,8 +113,4 @@ export async function loadReceiptPage(
     outcome,
     readingValue: row.readingValue,
   };
-}
-
-export function explorerTxLink(txHash: string | null): string | null {
-  return txHash === null ? null : `${EXPLORER_BASE}/tx/${txHash}`;
 }
