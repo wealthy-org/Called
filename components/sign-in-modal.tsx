@@ -73,35 +73,7 @@ export function SignInModal({ open, onClose, onSignedIn }: SignInModalProps) {
         throw new Error("wallet returned no address");
       }
 
-      const chain = await provider.request({ method: "eth_chainId" });
-      if (chain !== CHAIN_HEX) {
-        try {
-          await provider.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: CHAIN_HEX }],
-          });
-        } catch (caught) {
-          const code =
-            typeof caught === "object" && caught !== null && "code" in caught
-              ? (caught as { code?: unknown }).code
-              : undefined;
-          if (code !== 4902) {
-            throw caught;
-          }
-          await provider.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: CHAIN_HEX,
-                 chainName: "Robinhood Chain",
-                nativeCurrency: { name: "Robinhood ETH", symbol: "ETH", decimals: 18 },
-                 rpcUrls: ["https://rpc.mainnet.chain.robinhood.com"],
-                 blockExplorerUrls: ["https://explorer.mainnet.chain.robinhood.com"],
-              },
-            ],
-          });
-        }
-      }
+
 
       const nonceResponse = await fetch("/api/auth/nonce", { method: "POST" });
       const nonceBody = (await nonceResponse.json()) as { nonce?: unknown; error?: unknown };
