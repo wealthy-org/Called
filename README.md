@@ -85,6 +85,7 @@ verifying, and every session is signed out.
 | `npm run db:studio` | Drizzle Studio. |
 | `npm run db:seed` | Wipe and insert dev data. Refuses to run when `NODE_ENV=production`. |
 | `npm run gen:env` | Print fresh values for the secret env vars. |
+| `npm run gen:icons` | Regenerate icons and logo assets from `public/called-logo-no-bg.png`. |
 
 ## Layout
 
@@ -96,6 +97,8 @@ verifying, and every session is signed out.
 - `config/` — house model tiers and the vague-word list.
 - `prompts/forecaster.md` — the public Cassandra prompt.
 - `assets/fonts/` — fonts embedded in the OG share card.
+- `public/called-logo-no-bg.png` — source mark. Icons and logos are generated from it
+  with `npm run gen:icons`; do not edit the generated files by hand.
 - `docs/` — product, architecture and design specs.
 
 ## Routes

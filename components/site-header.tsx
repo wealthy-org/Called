@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const NAV = [
@@ -14,8 +15,20 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[rgba(10,10,11,0.92)] backdrop-blur">
       <nav className="mx-auto flex w-full max-w-[1180px] items-center gap-1 overflow-x-auto px-6 py-2">
-        <Link href="/" className="mr-4 font-display text-lg font-bold text-bone">
-          Called
+        <Link
+          href="/"
+          aria-label="Called home"
+          className="mr-4 inline-flex min-h-11 items-center gap-2 text-bone"
+        >
+          <Image
+            src="/called-mark.png"
+            alt=""
+            width={28}
+            height={28}
+            priority
+            className="h-7 w-7"
+          />
+          <span className="font-display text-lg font-bold">Called</span>
         </Link>
         {NAV.map(([href, label]) => (
           <Link

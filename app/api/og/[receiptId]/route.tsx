@@ -31,6 +31,19 @@ async function loadFont(file: string): Promise<Buffer> {
   return data;
 }
 
+let logoCache: string | null = null;
+
+async function loadLogo(): Promise<string> {
+  if (logoCache !== null) {
+    return logoCache;
+  }
+  const data = await readFile(
+    join(process.cwd(), "public", "called-mark.png"),
+  );
+  logoCache = `data:image/png;base64,${data.toString("base64")}`;
+  return logoCache;
+}
+
 function clampText(text: string, max: number): string {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (normalized.length <= max) {
@@ -133,10 +146,11 @@ export async function GET(
     return new Response("receipt not found", { status: 404 });
   }
 
-  const [doto, monoRegular, monoMedium] = await Promise.all([
+  const [doto, monoRegular, monoMedium, logo] = await Promise.all([
     loadFont("Doto-900.ttf"),
     loadFont("IBMPlexMono-400.ttf"),
     loadFont("IBMPlexMono-500.ttf"),
+    loadLogo(),
   ]);
 
   const origin = new URL(request.url).origin;
@@ -173,7 +187,11 @@ export async function GET(
             color: BONE,
           }}
         >
-          <div style={{ display: "flex" }}>Called</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse (Satori) cannot render next/image */}
+            <img src={logo} alt="" width={56} height={56} />
+            <div style={{ display: "flex" }}>Called</div>
+          </div>
           <div
             style={{
               display: "flex",

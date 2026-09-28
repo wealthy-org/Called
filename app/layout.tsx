@@ -20,9 +20,20 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
 export const metadata: Metadata = {
+  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: "Called",
   description: "Forecasts, sealed in public. Settled from a readable source.",
+  applicationName: "Called",
+  openGraph: {
+    type: "website",
+    siteName: "Called",
+    title: "Called",
+    description: "Forecasts, sealed in public. Settled from a readable source.",
+    images: [{ url: "/called-logo.png", width: 512, height: 433 }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

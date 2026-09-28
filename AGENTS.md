@@ -12,6 +12,9 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - Single test file: `npx.cmd vitest run lib/seal.test.ts`. Files are `**/*.test.ts`.
 - DB: `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` (Drizzle).
 - Dev data: `npm run db:seed` (destructive wipe + rebuild). Secrets: `npm run gen:env`.
+- Icons: `npm run gen:icons` regenerates `app/icon.png`, `app/apple-icon.png`,
+  `app/favicon.ico` and `public/called-logo.png` / `called-mark.png` from
+  `public/called-logo-no-bg.png`. Never hand-edit the generated binaries.
 - Playwright is NOT installed. Docs plan it — install before adding e2e tests.
 - No CI and no `opencode.json` in repo. `package-lock.json` is present.
 - Windows: PowerShell blocks `npm.ps1`/`npx.ps1`. Always use `npm.cmd` / `npx.cmd`.
