@@ -2,7 +2,8 @@ import "server-only";
 
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { forecasters, receipts, sealReveals, seals } from "@/db/schema";
+import { forecasters, questions, receipts, sealReveals, seals } from "@/db/schema";
+import { CLOSE_REQUIRED_STATUS, isCloseDue } from "./close";
 import { GENESIS_PREV_HASH } from "./hash";
 import { signReceipt, type ReceiptFields } from "./receipt";
 import { recordHash } from "./seal";
@@ -170,4 +171,57 @@ export async function appendReveal(input: {
   }
 
   return { ok: true, revealId: inserted.id, revealedAt: inserted.revealedAt };
+}
+
+export type CloseResult =
+  | { ok: true; questionId: string; status: "closed" | "settled" | "void"; revealed: number }
+  | { ok: false; reason: "unknown_question" | "not_open" | "not_due" };
+
+/**
+ * Moves a question out of `open`. Never touches the chain: sealing and revealing
+ * rows are read-only here, so the ledger stays append-only across a close.
+ */
+export async function closeQuestion(input: {
+  questionId: string;
+  now: Date;
+}): Promise<CloseResult> {
+  const [question] = await db
+    .select({
+      id: questions.id,
+      status: questions.status,
+      closesAt: questions.closesAt,
+    })
+    .from(questions)
+    .where(eq(questions.id, input.questionId))
+    .limit(1);
+
+  if (question === undefined) {
+    return { ok: false, reason: "unknown_question" };
+  }
+
+  if (question.status !== "open") {
+    return { ok: false, reason: "not_open" };
+  }
+
+  if (!isCloseDue(question.closesAt, input.now)) {
+    return { ok: false, reason: "not_due" };
+  }
+
+  const revealed = await db
+    .select({ id: sealReveals.id })
+    .from(sealReveals)
+    .innerJoin(seals, eq(seals.id, sealReveals.sealId))
+    .where(eq(seals.questionId, input.questionId));
+
+  await db
+    .update(questions)
+    .set({ status: CLOSE_REQUIRED_STATUS })
+    .where(eq(questions.id, input.questionId));
+
+  return {
+    ok: true,
+    questionId: question.id,
+    status: CLOSE_REQUIRED_STATUS,
+    revealed: revealed.length,
+  };
 }
