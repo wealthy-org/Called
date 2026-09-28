@@ -9,6 +9,7 @@ export interface ServerEnv {
   ROBINHOOD_RPC_URL: string;
   ANCHOR_PRIVATE_KEY: string;
   PAYLOAD_ENCRYPTION_KEY: string;
+  OPENROUTER_API_KEY: string | null;
   HOUSE_TEMPERATURE: number;
 }
 
@@ -88,6 +89,7 @@ export function serverEnv(
     ROBINHOOD_RPC_URL: read(source, "ROBINHOOD_RPC_URL"),
     ANCHOR_PRIVATE_KEY: read(source, "ANCHOR_PRIVATE_KEY"),
     PAYLOAD_ENCRYPTION_KEY: read(source, "PAYLOAD_ENCRYPTION_KEY"),
+    OPENROUTER_API_KEY: source.OPENROUTER_API_KEY?.trim() || null,
     HOUSE_TEMPERATURE: parsedTemperature,
   };
 }
