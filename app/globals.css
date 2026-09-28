@@ -2002,3 +2002,377 @@ body {
     padding: 20px;
   }
 }
+
+/* ── Ledger ── */
+
+.ledger-page .lhead {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 56px;
+  align-items: start;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledger-page .lhead-left {
+  min-width: 0;
+}
+
+.ledger-page .lpage-title {
+  font-family: var(--font-doto), ui-sans-serif, sans-serif;
+  font-size: clamp(48px, 6vw, 88px);
+  font-weight: 900;
+  line-height: 0.98;
+  color: var(--bone);
+  margin-top: 8px;
+}
+
+.ledger-page .lhead-desc {
+  margin-top: 14px;
+  max-width: 560px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--mute);
+}
+
+/* Chain status index */
+
+.ledger-page .lstatus {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger-page .lstatus-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledger-page .lstatus-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-page .lstatus-label {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--mute);
+  text-transform: uppercase;
+}
+
+.ledger-page .lstatus-value {
+  font-family: var(--font-doto), ui-sans-serif, sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--bone);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.ledger-page .lstatus-hash {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Verification terminal */
+
+.ledger-page .lverify {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledger-page .lverify-panel {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 24px 28px;
+}
+
+.ledger-page .lverify-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.ledger-page .lverify-title {
+  font-family: var(--font-doto), ui-sans-serif, sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--bone);
+  line-height: 1;
+}
+
+.ledger-page .lverify-desc {
+  font-size: 13.5px;
+  color: var(--mute);
+}
+
+.ledger-page .lverify-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.ledger-page .lverify-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 4px;
+  background: var(--seal);
+  color: var(--void);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ledger-page .lverify-btn:hover:not(:disabled) {
+  background: var(--bone);
+  color: var(--void);
+}
+
+.ledger-page .lverify-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ledger-page .lverify-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.ledger-page .lverify-btn-secondary:hover {
+  border-color: var(--seal);
+  color: var(--seal);
+}
+
+.ledger-page .lverify-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.ledger-page .lverify-status:first-of-type {
+  margin-top: 4px;
+}
+
+.ledger-page .lverify-status-label {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--mute);
+  text-transform: uppercase;
+  min-width: 100px;
+}
+
+.ledger-page .lverify-status-value {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ledger-page .lverify-status-detail {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.ledger-page .lverify-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--seal);
+}
+
+/* Records section */
+
+.ledger-page .lrecords {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledger-page .lrecords-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ledger-page .lrecords-title {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--mute);
+  text-transform: uppercase;
+}
+
+.ledger-page .lrecords-meta {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.ledger-page .lrecords-empty {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.ledger-page .lrecord-list {
+  list-style: none;
+  margin-top: 16px;
+}
+
+.ledger-page .lrecord {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ledger-page .lrecord:last-child {
+  border-bottom: none;
+}
+
+.ledger-page .lrecord-index {
+  font-family: var(--font-doto), ui-sans-serif, sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--seal);
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.ledger-page .lrecord-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ledger-page .lrecord-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ledger-page .lrecord-question {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ledger-page .lrecord-hash-row {
+  margin-top: 2px;
+}
+
+.ledger-page .lrecord-hash {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ledger-page .lrecord-meta {
+  font-size: 11.5px;
+}
+
+.ledger-page .lrecord-anchor {
+  font-size: 11.5px;
+  margin-left: auto;
+}
+
+/* Chain explanation */
+
+.ledger-page .lnote {
+  padding: 28px 0;
+}
+
+.ledger-page .lnote-text {
+  max-width: 680px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--mute);
+}
+
+/* Responsive */
+
+@media (max-width: 860px) {
+  .ledger-page .lhead {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .ledger-page .lpage-title {
+    font-size: clamp(40px, 10vw, 72px);
+  }
+
+  .ledger-page .lstatus {
+    border-top: none;
+  }
+
+  .ledger-page .lverify-panel {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ledger-page .lrecord {
+    grid-template-columns: 4rem 1fr;
+    gap: 0 14px;
+  }
+
+  .ledger-page .lrecord-index {
+    font-size: 18px;
+  }
+
+  .ledger-page .lrecord-meta,
+  .ledger-page .lrecord-anchor {
+    font-size: 10.5px;
+  }
+
+  .ledger-page .lrecord-body {
+    gap: 4px;
+  }
+
+  .ledger-page .lstatus-value {
+    font-size: 18px;
+  }
+
+  .ledger-page .lrecords-head {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

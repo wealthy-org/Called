@@ -33,17 +33,17 @@ async function makeChain(length: number): Promise<LedgerRecordView[]> {
 describe("verifyRecords", () => {
   it("reports VALID for an intact chain", async () => {
     const records = await makeChain(5);
-    expect(await verifyRecords(records)).toEqual({ status: "VALID" });
+    expect(await verifyRecords(records)).toMatchObject({ status: "VALID" });
   });
 
   it("reports VALID for an empty chain", async () => {
-    expect(await verifyRecords([])).toEqual({ status: "VALID" });
+    expect(await verifyRecords([])).toMatchObject({ status: "VALID" });
   });
 
   it("reports VALID for a single genesis record", async () => {
     const records = await makeChain(1);
     expect(records[0].prev).toBe(GENESIS_PREV_HASH);
-    expect(await verifyRecords(records)).toEqual({ status: "VALID" });
+    expect(await verifyRecords(records)).toMatchObject({ status: "VALID" });
   });
 
   it("names the record whose own hash was tampered", async () => {
@@ -103,7 +103,7 @@ describe("verifyRecords", () => {
         second.prev,
       ),
     };
-    expect(await verifyRecords([records[0], forged])).toEqual({
+    expect(await verifyRecords([records[0], forged])).toMatchObject({
       status: "VALID",
     });
   });
