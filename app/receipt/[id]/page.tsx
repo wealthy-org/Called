@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReceiptSlip, type ReceiptRow } from "@/components/receipt-slip";
 import { explorerTxLink, loadReceiptPage } from "./data";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export async function generateMetadata({
@@ -137,7 +137,7 @@ export default async function ReceiptPage({
         </Link>
       </footer>
     </main>
-    <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

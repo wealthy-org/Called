@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { explorerTxLink } from "@/lib/explorer";
 import { loadAnchor } from "./data";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
@@ -103,7 +103,7 @@ export default async function AnchorPage(props: PageProps<"/anchor/[id]">) {
         </Link>
       </p>
     </main>
-    <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

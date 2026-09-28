@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ReceiptSlip } from "@/components/receipt-slip";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 import { loadHomeReceipt } from "@/app/home-data";
 
@@ -132,7 +132,7 @@ export default async function MethodPage() {
         </section>
       </main>
 
-      <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

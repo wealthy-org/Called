@@ -42,7 +42,7 @@ export default async function WorkspaceLayout({
   ) : (
     <>
       <SiteHeader />
-      <div className="min-h-[50vh]">{children}</div>
+      <div>{children}</div>
       <WorkspaceFooter />
     </>
   );

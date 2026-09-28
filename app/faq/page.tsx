@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FAQ_ITEMS, FaqRow } from "@/components/faq-list";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
@@ -45,7 +45,7 @@ export default function FaqPage() {
         </div>
       </main>
 
-      <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

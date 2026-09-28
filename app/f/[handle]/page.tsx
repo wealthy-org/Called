@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalibrationPlot } from "@/components/calibration-plot";
+import { SiteHeader } from "@/components/site-header";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { loadProfile } from "./data";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +38,9 @@ export default async function ProfilePage({ params }: PageProps<"/f/[handle]">) 
   const { metrics, murphy, calibration } = profile;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-16">
+    <>
+      <SiteHeader />
+      <main className="mx-auto max-w-3xl px-4 py-16">
       <p className="font-mono text-xs uppercase tracking-[0.18em] text-mute">
         Forecaster
       </p>
@@ -213,5 +217,7 @@ export default async function ProfilePage({ params }: PageProps<"/f/[handle]">) 
         )}
       </section>
     </main>
+      <WorkspaceFooter />
+    </>
   );
 }

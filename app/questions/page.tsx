@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { sweepDueQuestions } from "@/lib/close-sweep";
 import { listQuestions } from "@/lib/question-store";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
@@ -84,7 +84,7 @@ export default async function QuestionsPage() {
         </ul>
        )}
       </main>
-      <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

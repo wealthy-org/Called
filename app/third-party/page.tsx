@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
@@ -160,7 +160,7 @@ SOFTWARE.`}
           Full source: THIRD_PARTY.md in the repository root.
         </p>
       </main>
-      <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

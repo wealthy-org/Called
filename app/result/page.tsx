@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { loadHomeResult } from "@/app/home-data";
 import { SpreadPlot } from "@/components/spread-plot";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 import { brierScore } from "@/lib/scoring/brier";
 
@@ -159,7 +159,7 @@ export default async function ResultPage() {
           </div>
         )}
       </main>
-      <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

@@ -6,7 +6,7 @@ import { getQuestion } from "@/lib/question-store";
 import { Countdown } from "./countdown";
 import { ResultBlock } from "./result";
 import { SealForm } from "./seal-form";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
@@ -114,7 +114,7 @@ export default async function QuestionPage({
         </div>
       ) : null}
     </main>
-    <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

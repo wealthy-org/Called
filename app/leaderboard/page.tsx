@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LeaderboardSection } from "./leaderboard-section";
 import { CalibrationPanel } from "./calibration-panel";
 import { loadLeaderboardPage } from "./data";
-import { SiteFooter } from "@/components/site-footer";
+import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
@@ -39,7 +39,7 @@ export default async function LeaderboardPage() {
         success or failure.
       </section>
     </main>
-    <SiteFooter />
+      <WorkspaceFooter />
     </>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function WorkspaceFooter() {
   return (
-    <footer className="border-t border-line">
+    <footer className="mt-auto border-t border-line">
       <div className="wrap py-10">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
           <p className="font-display text-2xl font-bold text-bone">Called</p>
