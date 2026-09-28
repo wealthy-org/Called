@@ -2,10 +2,13 @@ import Link from "next/link";
 import { CalibrationPanel } from "@/app/leaderboard/calibration-panel";
 import { LeaderboardSection } from "@/app/leaderboard/leaderboard-section";
 import { loadLeaderboardPage } from "@/app/leaderboard/data";
+import { FAQ_ITEMS, FaqRow } from "@/components/faq-list";
 import { Hero } from "@/components/hero";
 import { HomeQuestion } from "@/components/home-question";
 import { ReceiptSlip } from "@/components/receipt-slip";
 import { RevealObserver } from "@/components/reveal";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { SpreadPlot } from "@/components/spread-plot";
 import { VerifyButton } from "@/app/ledger/verify";
 import {
@@ -34,7 +37,7 @@ export default async function Home() {
   return (
     <>
       <RevealObserver />
-      <HomeHeader />
+      <SiteHeader />
 
       <Hero
         headHash={session.headHash}
@@ -195,23 +198,16 @@ export default async function Home() {
             </p>
           </div>
           <div className="divide-y divide-line border-y border-line">
-            <FaqRow q="What does a sealed record actually prove?">
-              That the prediction existed before the outcome only once the record
-              is anchored on-chain. Before that, it is a claim this server makes.
-            </FaqRow>
-            <FaqRow q="Why is a score marked provisional?">
-              Fewer than 20 settled answers is not enough to rank. Those rows are
-              shown but excluded from the ranking.
-            </FaqRow>
-            <FaqRow q="Can a failed call be scored as 50%?">
-              No. A failure is counted as a failure. It is never turned into a
-              number.
-            </FaqRow>
+            {FAQ_ITEMS.map((item) => (
+              <FaqRow key={item.q} q={item.q}>
+                {item.a}
+              </FaqRow>
+            ))}
           </div>
         </div>
       </Section>
 
-      <HomeFooter />
+      <SiteFooter />
     </>
   );
 }
@@ -238,79 +234,6 @@ const METHOD_STEPS = [
     body: "The resolver reads one number from one source. An unreadable source means void, never a guess.",
   },
 ];
-
-function HomeHeader() {
-  return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[rgba(10,10,11,0.92)] backdrop-blur">
-      <nav className="mx-auto flex w-full max-w-[1180px] items-center gap-1 overflow-x-auto px-6 py-2">
-        <Link href="/" className="mr-4 font-display text-lg font-bold text-bone">
-          Called
-        </Link>
-        {[
-          ["/questions", "Questions"],
-          ["/ledger", "Ledger"],
-          ["/leaderboard", "Leaderboard"],
-          ["/method", "Method"],
-          ["/faq", "FAQ"],
-          ["/agents", "Agents"],
-        ].map(([href, label]) => (
-          <Link
-            key={href}
-            href={href}
-            className="inline-flex min-h-11 items-center rounded-field px-3 text-sm text-mute hover:bg-ink hover:text-bone"
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
-    </header>
-  );
-}
-
-function HomeFooter() {
-  return (
-    <footer className="border-t border-line">
-      <div className="mx-auto w-full max-w-[1180px] px-6 py-16">
-        <p className="font-display text-4xl font-bold text-bone">Called</p>
-        <p className="mt-3 max-w-[420px] text-lg text-mute">
-          Forecasts, sealed in public. Settled from a readable source.
-        </p>
-
-        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-          {[
-            ["/questions", "Questions"],
-            ["/ledger", "Ledger"],
-            ["/leaderboard", "Leaderboard"],
-            ["/method", "Method"],
-            ["/faq", "FAQ"],
-            ["/agents", "Agents"],
-          ].map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className="inline-flex min-h-11 items-center text-sm text-mute hover:text-bone"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-
-        <p className="mt-8 border-t border-line pt-6 font-mono text-xs text-mute">
-          Scoring adapted from{" "}
-          <a
-            href="https://github.com/Noisyxl/brier"
-            className="text-bone hover:text-seal"
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            brier
-          </a>{" "}
-          (MIT). See THIRD_PARTY.md.
-        </p>
-      </div>
-    </footer>
-  );
-}
 
 function Section({
   id,
@@ -349,19 +272,4 @@ function SectionHeader({ title, body }: { title: string; body: string }) {
 
 function Empty({ children }: { children: ReactNode }) {
   return <p className="py-10 text-center text-mute">{children}</p>;
-}
-
-function FaqRow({ q, children }: { q: string; children: ReactNode }) {
-  return (
-    <details className="group">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-[22px] text-[19px] font-medium text-bone">
-        {q}
-        <span aria-hidden="true" className="font-mono text-mute">
-          <span className="group-open:hidden">+</span>
-          <span className="hidden group-open:inline">-</span>
-        </span>
-      </summary>
-      <p className="max-w-[640px] pb-6 text-mute">{children}</p>
-    </details>
-  );
 }
