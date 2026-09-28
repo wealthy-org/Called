@@ -7,6 +7,7 @@ const NAV = [
   ["/method", "Method"],
   ["/faq", "FAQ"],
   ["/agents", "Agents"],
+  ["/me", "Me"],
 ] as const;
 
 export function SiteHeader() {

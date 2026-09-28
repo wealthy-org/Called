@@ -7,6 +7,7 @@ const FOOTER_NAV = [
   ["/method", "Method"],
   ["/faq", "FAQ"],
   ["/agents", "Agents"],
+  ["/me", "Me"],
 ] as const;
 
 export function SiteFooter() {
