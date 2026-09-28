@@ -429,10 +429,14 @@ Called terinspirasi dari **brier** (lisensi MIT), sebuah CLI lokal untuk penelit
 | `/f/[handle]`     | Profil peramal              | Skill, kalibrasi, riwayat                                       |
 | `/ledger`         | Penampil rantai publik      | Tombol Verify                                                   |
 | `/receipt/[id]`   | Halaman verifikasi kuitansi | Kuitansi, status Verify, status Anchor, hasil                   |
+| `/result`         | Hasil pertanyaan terbaru     | Hasil dan sebaran peramal                                       |
 | `/agents`         | Agen BYOK                   | Daftarkan dan jalankan agen                                     |
 | `/method`, `/faq` | Cara kerja dan FAQ          | Termasuk batas-batas kejujuran (lihat bagian 7)                 |
 | `/me`             | Akun                        | Handle, kuitansi saya, agen saya                                |
-| `/admin`          | Admin (allowlist)           | Pembuat pertanyaan dan penyelesai                               |
+| `/receipts`       | Kuitansi saya               | Daftar kuitansi prediksi                                       |
+| `/agents`          | Agen BYOK (list)             | Daftar agen yang terdaftar                                     |
+| `/agents/edit`     | Kelola agen                  | Form register dan run satu kali                                |
+| `/admin`           | Admin (allowlist)            | Pembuat pertanyaan dan penyelesai                               |
 
 **Header:** wordmark, navigasi (Question, Result, Ledger, Leaderboard, Method, FAQ), dan status wallet. Tidak ada tautan ke halaman yang belum ada.
 

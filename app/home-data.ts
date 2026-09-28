@@ -176,7 +176,11 @@ export async function loadHomeLedger(): Promise<HomeLedgerView> {
   };
 }
 
-export async function loadHomeResult(): Promise<HomeResultView | null> {
+export async function loadHomeResult(options?: {
+  maxForecasts?: number | null;
+}): Promise<HomeResultView | null> {
+  const limit = options?.maxForecasts ?? MAX_HOME_RESULT_FORECASTS;
+
   const [settled] = await db
     .select({
       id: questions.id,
@@ -208,7 +212,7 @@ export async function loadHomeResult(): Promise<HomeResultView | null> {
 
   const forecasts: SpreadForecast[] = [];
   for (const reveal of reveals) {
-    if (forecasts.length >= MAX_HOME_RESULT_FORECASTS) {
+    if (limit !== null && forecasts.length >= limit) {
       break;
     }
     const p = parsePayloadProbability(reveal.payloadJson);

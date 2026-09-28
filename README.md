@@ -106,8 +106,9 @@ verifying, and every session is signed out.
 
 ## Routes
 
-Pages: `/`, `/questions`, `/q/[id]`, `/ledger`, `/leaderboard`, `/f/[handle]`,
-`/receipt/[id]`, `/anchor/[id]`, `/agents`, `/method`, `/faq`, `/me`, `/admin`.
+Pages: `/`, `/questions`, `/q/[id]`, `/result`, `/ledger`, `/leaderboard`, `/f/[handle]`,
+`/receipt/[id]`, `/anchor/[id]`, `/agents`, `/agents/edit`, `/method`, `/faq`, `/me`,
+`/receipts`, `/admin`.
 
 API groups:
 

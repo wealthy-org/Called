@@ -6,7 +6,7 @@ export interface SpreadForecast {
 
 export interface SpreadPlotProps {
   forecasts: SpreadForecast[];
-  outcome: boolean;
+  outcome?: boolean;
   className?: string;
 }
 
@@ -42,26 +42,27 @@ function overlaps(a: MarkerLayout, b: MarkerLayout): boolean {
     labelWidth(a.forecast.label) / 2 + labelWidth(b.forecast.label) / 2 + PADDING_PX;
 }
 
-export function layoutSpreadMarkers(forecasts: SpreadForecast[]): MarkerLayout[] {
+export function layoutSpreadMarkers(forecasts: SpreadForecast[], outcome?: boolean): MarkerLayout[] {
   const sorted = forecasts
     .map((forecast, index) => ({ forecast, index }))
     .sort((a, b) => clampPercent(a.forecast.p) - clampPercent(b.forecast.p) || a.index - b.index);
   const lanes: MarkerLayout[][] = [[], []];
-  // Reserve the real outcome text width at 100% in the down lane. The outcome
-  // label is right-anchored so its text extends left from the edge; center the
-  // synthetic slot over that real extent. Forecast labels overlapping this
-  // zone are forced into the up lane, never stacked inside the outcome band.
-  const outcomeSlot: MarkerLayout = {
-    forecast: { id: "__outcome__", label: OUTCOME_LABEL, p: 1 },
-    left:
-      100 -
-      (labelWidth(OUTCOME_LABEL) / 2 / (PLOT_WIDTH_PX - PADDING_PX * 2)) * 100,
-    lane: "down",
-    offset: 0,
-  };
-  lanes[DOWN].push(outcomeSlot);
 
-  const collidesWithOutcome = (candidate: MarkerLayout): boolean => overlaps(candidate, outcomeSlot);
+  const outcomeSlot: MarkerLayout | null =
+    outcome !== undefined
+      ? {
+          forecast: { id: "__outcome__", label: OUTCOME_LABEL, p: 1 },
+          left:
+            100 -
+            (labelWidth(OUTCOME_LABEL) / 2 / (PLOT_WIDTH_PX - PADDING_PX * 2)) * 100,
+          lane: "down",
+          offset: 0,
+        }
+      : null;
+
+  if (outcomeSlot) {
+    lanes[DOWN].push(outcomeSlot);
+  }
 
   const markers = sorted.map(({ forecast, index }) => {
     const left = clampPercent(forecast.p) * 100;
@@ -71,8 +72,7 @@ export function layoutSpreadMarkers(forecasts: SpreadForecast[]): MarkerLayout[]
     let offset = 0;
     let candidate: MarkerLayout = { forecast, left, lane: preferred === UP ? "up" : "down", offset };
 
-    if (collidesWithOutcome(candidate)) {
-      // Never share the outcome band: up lane only, stacking offsets there.
+    if (outcomeSlot && overlaps(candidate, outcomeSlot)) {
       laneIndex = UP;
       candidate = { ...candidate, lane: "up" };
       offset = lanes[UP].filter((marker) => overlaps(candidate, marker)).length * OUTCOME_STACK_OFFSET;
@@ -101,14 +101,21 @@ export function layoutSpreadMarkers(forecasts: SpreadForecast[]): MarkerLayout[]
   return markers;
 }
 
-export function spreadSummary(forecasts: SpreadForecast[], outcome: boolean): string {
-  if (forecasts.length === 0) return `No forecasters to plot. Outcome ${outcome ? "YES" : "NO"}.`;
+export function spreadSummary(forecasts: SpreadForecast[], outcome?: boolean): string {
+  if (forecasts.length === 0) {
+    return outcome === undefined
+      ? "No forecasters to plot. No outcome yet."
+      : `No forecasters to plot. Outcome ${outcome ? "YES" : "NO"}.`;
+  }
   const parts = forecasts.map((f) => `${f.label} said ${(clampPercent(f.p) * 100).toFixed(0)}%`).join("; ");
+  if (outcome === undefined) {
+    return `Spread of ${forecasts.length} forecasters. ${parts}. No outcome yet.`;
+  }
   return `Spread of ${forecasts.length} forecasters. ${parts}. Outcome ${outcome ? "YES" : "NO"} at 100%.`;
 }
 
 export function SpreadPlot({ forecasts, outcome, className }: SpreadPlotProps) {
-  const markers = layoutSpreadMarkers(forecasts);
+  const markers = layoutSpreadMarkers(forecasts, outcome);
   return (
     <figure className={`spread ${className ?? ""}`} role="img" aria-label={spreadSummary(forecasts, outcome)}>
       <div className="axis" aria-hidden="true" />
@@ -128,7 +135,9 @@ export function SpreadPlot({ forecasts, outcome, className }: SpreadPlotProps) {
           <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
         </span>
       ))}
-      <span className="mk dn out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
+      {outcome !== undefined && (
+        <span className="mk dn out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
+      )}
     </figure>
   );
 }

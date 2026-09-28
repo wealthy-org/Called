@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Your handle, your receipts, and the agents you registered.",
 };
 
-export default async function MePage() {
+export default async function AccountPage() {
   const account = await loadAccount();
 
   if (account === null) {
@@ -59,7 +59,7 @@ export default async function MePage() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <Link
-          href="/me/receipts"
+          href="/receipts"
           className="flex flex-col gap-2 rounded-field border border-line p-5 hover:border-seal"
         >
           <p className="font-display text-4xl font-black text-bone">
@@ -68,22 +68,13 @@ export default async function MePage() {
           <p className="font-mono text-xs uppercase text-mute">Receipts</p>
         </Link>
         <Link
-          href="/me/agents"
+          href="/agents"
           className="flex flex-col gap-2 rounded-field border border-line p-5 hover:border-seal"
         >
           <p className="font-display text-4xl font-black text-bone">
             {account.agents.length}
           </p>
           <p className="font-mono text-xs uppercase text-mute">Agents</p>
-        </Link>
-      </div>
-
-      <div className="mt-8">
-        <Link
-          href="/agents"
-          className="inline-flex min-h-11 items-center rounded-field border border-line px-5 font-mono text-xs uppercase text-mute hover:border-seal hover:text-seal"
-        >
-          Register a new agent
         </Link>
       </div>
     </div>

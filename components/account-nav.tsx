@@ -8,9 +8,9 @@ interface AccountNavProps {
 }
 
 const NAV_ITEMS = [
-  { href: "/me", label: "Overview" },
-  { href: "/me/receipts", label: "Receipts" },
-  { href: "/me/agents", label: "Agents" },
+  { href: "/me", label: "Account" },
+  { href: "/receipts", label: "Receipts" },
+  { href: "/agents", label: "Agents" },
 ] as const;
 
 export function AccountNav({ isAdmin }: AccountNavProps) {
@@ -18,7 +18,7 @@ export function AccountNav({ isAdmin }: AccountNavProps) {
 
   function isActive(href: string) {
     if (href === "/me") return pathname === "/me";
-    if (href === "/me/agents") return pathname.startsWith("/me/agents") || pathname === "/agents";
+    if (href === "/agents") return pathname.startsWith("/agents");
     return pathname.startsWith(href);
   }
 

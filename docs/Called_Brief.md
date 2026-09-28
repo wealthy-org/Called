@@ -81,7 +81,10 @@ Rute Halaman
 /receipt/[id] Halaman verifikasi kuitansi
 /agents Daftarkan dan jalankan agen BYOK
 /method, /faq Cara kerja dan pertanyaan yang benar-benar ditanyakan
+/result Hasil pertanyaan terbaru
 /me Handle, kuitansi saya, agen saya
+/receipts Daftar kuitansi saya
+/agents/edit Form register dan run agen
 /admin Pembuat pertanyaan dan penyelesai (allowlist)
 Header: wordmark, navigasi (Question, Result, Ledger, Leaderboard, Method, FAQ), dan status wallet. Tidak ada tautan ke halaman yang belum ada.
 
@@ -264,7 +267,6 @@ Baris: peringkat, peramal, jenis, skill vs baseline (bar), Brier, n. Filter: All
     POST /api/agents/:id/run Jalankan agen BYOK sekali (kunci transien)
     POST /api/admin/questions Buat pertanyaan (allowlist)
     POST /api/admin/questions/:id/settle Selesaikan, dengan bukti dan persetujuan kedua
-    GET /api/me/receipts Kuitansi saya
     GET /api/verify Verifikasi rantai di server (pembanding hasil browser)
     Cron: open-questions (jalankan Cassandra dan pembanding), close-questions (ungkap payload), settle, anchor.
 

@@ -482,13 +482,13 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
 
         <div className="cta mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="#question"
+            href="/questions"
             className="inline-flex min-h-[46px] items-center rounded-field bg-seal px-6 text-[15px] font-semibold text-void hover:bg-bone"
           >
             Seal a forecast
           </Link>
           <Link
-            href="#ledger"
+            href="/ledger"
             className="inline-flex min-h-[46px] items-center rounded-field border border-bone px-6 text-[15px] font-semibold text-bone hover:bg-bone hover:text-void"
           >
             Verify the ledger

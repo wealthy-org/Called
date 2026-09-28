@@ -57,13 +57,13 @@ describe("layoutSpreadMarkers", () => {
     const markers = layoutSpreadMarkers([
       forecast("always yes", 0.99),
       forecast("doubter", 0.05),
-    ]);
+    ], true);
     const alwaysYes = markers.find((m) => m.forecast.id === "always yes");
     expect(alwaysYes?.lane).toBe("up");
   });
 
   it("forces a 100% forecaster into the up lane, away from the outcome label", () => {
-    const markers = layoutSpreadMarkers([forecast("certain", 1)]);
+    const markers = layoutSpreadMarkers([forecast("certain", 1)], true);
     expect(markers[0].lane).toBe("up");
   });
 
@@ -72,7 +72,7 @@ describe("layoutSpreadMarkers", () => {
       forecast("edge-a", 0.98),
       forecast("edge-b", 0.99),
       forecast("edge-c", 1),
-    ]);
+    ], true);
     const ups = markers.filter((m) => m.lane === "up");
     expect(ups).toHaveLength(3);
     const offsets = ups.map((m) => m.offset);

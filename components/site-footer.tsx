@@ -1,13 +1,12 @@
 import Link from "next/link";
 
 const FOOTER_NAV = [
-  ["/questions", "Questions"],
+  ["/questions", "Question"],
+  ["/result", "Result"],
   ["/ledger", "Ledger"],
   ["/leaderboard", "Leaderboard"],
   ["/method", "Method"],
   ["/faq", "FAQ"],
-  ["/agents", "Agents"],
-  ["/me", "Me"],
   ["/third-party", "Third-party notices"],
 ] as const;
 

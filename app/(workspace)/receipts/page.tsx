@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { loadAccount } from "../data";
+import { loadAccount } from "../me/data";
 
 export const dynamic = "force-dynamic";
 
@@ -9,24 +9,20 @@ export const metadata: Metadata = {
   description: "Every forecast you sealed.",
 };
 
-export default async function MeReceiptsPage() {
+export default async function ReceiptsPage() {
   const account = await loadAccount();
 
   if (account === null) {
     return (
       <div className="max-w-[560px]">
-        <p className="text-lg text-mute">
-          You are not signed in.
-        </p>
+        <p className="text-lg text-mute">You are not signed in.</p>
       </div>
     );
   }
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-bold text-bone">
-        My receipts
-      </h2>
+      <h1 className="font-display text-3xl text-bone">Your receipts</h1>
       {account.receipts.length === 0 ? (
         <p className="mt-4 text-mute">
           You have not sealed a forecast yet. Seal one on an open question

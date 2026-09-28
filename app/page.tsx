@@ -56,7 +56,7 @@ export default async function Home() {
   return (
     <div className="home-page">
       <RevealObserver />
-      <SiteHeader variant="landing" />
+      <SiteHeader />
 
       <Hero
         headHash={session.headHash}
@@ -86,7 +86,7 @@ export default async function Home() {
           </Empty>
         ) : (
           <>
-             <div className="rgrid grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
+             <div className="result-view rgrid grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
                <div>
                  <p className="kicker">AFTER SETTLEMENT</p>
                  <p className="verdict font-display text-[clamp(96px,17vw,230px)] leading-[0.82] font-black text-bone">

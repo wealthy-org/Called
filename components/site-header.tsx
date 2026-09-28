@@ -7,22 +7,12 @@ import { useRouter } from "next/navigation";
 import { SignInModal } from "@/components/sign-in-modal";
 
 const NAV = [
-  ["/questions", "Questions"],
+  ["/questions", "Question"],
+  ["/result", "Result"],
   ["/ledger", "Ledger"],
   ["/leaderboard", "Leaderboard"],
   ["/method", "Method"],
   ["/faq", "FAQ"],
-  ["/agents", "Agents"],
-  ["/me", "Me"],
-] as const;
-
-const LANDING_NAV = [
-  ["#question", "Question"],
-  ["#result", "Result"],
-  ["#ledger", "Ledger"],
-  ["#leaderboard", "Leaderboard"],
-  ["#method", "Method"],
-  ["#faq", "Questions asked"],
 ] as const;
 
 function truncateWallet(address: string): string {
@@ -36,15 +26,13 @@ interface SessionUser {
   isAdmin: boolean;
 }
 
-export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" }) {
+export function SiteHeader() {
   const router = useRouter();
   const [signInOpen, setSignInOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
   const walletRef = useRef<HTMLDivElement>(null);
-
-  const items = variant === "landing" ? LANDING_NAV : NAV;
 
   const avatarText = (user?.handle ?? user?.walletAddress ?? "")
     .slice(0, 2)
@@ -95,7 +83,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
           </Link>
 
           <div className="site-links ml-auto flex min-w-0 items-center gap-1">
-            {items.map(([href, label]) => (
+            {NAV.map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
@@ -135,7 +123,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                       Account
                     </Link>
                     <Link
-                      href="/me/receipts"
+                      href="/receipts"
                       role="menuitem"
                       onClick={() => setWalletOpen(false)}
                       className="block px-4 py-3 text-sm text-bone hover:bg-void"
@@ -143,7 +131,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                       My receipts
                     </Link>
                     <Link
-                      href="/me/agents"
+                      href="/agents"
                       role="menuitem"
                       onClick={() => setWalletOpen(false)}
                       className="block px-4 py-3 text-sm text-bone hover:bg-void"
@@ -224,7 +212,7 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
               </button>
             </div>
             <div className="flex flex-col overflow-y-auto p-4">
-              {items.map(([href, label]) => (
+              {NAV.map(([href, label]) => (
                 <Link
                   key={href}
                   href={href}
@@ -247,14 +235,14 @@ export function SiteHeader({ variant = "app" }: { variant?: "app" | "landing" })
                     Account
                   </Link>
                   <Link
-                    href="/me/receipts"
+                    href="/receipts"
                     onClick={() => setMobileOpen(false)}
                     className="block min-h-11 border border-line py-3 text-center text-sm text-bone hover:border-bone"
                   >
                     My receipts
                   </Link>
                   <Link
-                    href="/me/agents"
+                    href="/agents"
                     onClick={() => setMobileOpen(false)}
                     className="block min-h-11 border border-line py-3 text-center text-sm text-bone hover:border-bone"
                   >
