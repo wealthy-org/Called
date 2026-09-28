@@ -24,12 +24,10 @@ async function tile(mark: Buffer, size: number, background: string | null): Prom
     .png()
     .toBuffer();
 
-  if (background === null) {
-    return resized;
-  }
+  const canvas = background === null ? { r: 0, g: 0, b: 0, alpha: 0 } : background;
 
   return sharp({
-    create: { width: size, height: size, channels: 4, background },
+    create: { width: size, height: size, channels: 4, background: canvas },
   })
     .composite([{ input: resized, gravity: "center" }])
     .png()
@@ -94,7 +92,7 @@ async function main(): Promise<void> {
 
   const mark = await loadMark();
 
-  await emit(join(ROOT, "app", "icon.png"), await tile(mark, 512, VOID));
+  await emit(join(ROOT, "app", "icon.png"), await tile(mark, 512, null));
   await emit(join(ROOT, "app", "apple-icon.png"), await tile(mark, 180, VOID));
   await emit(
     join(ROOT, "public", "called-logo.png"),
@@ -104,7 +102,7 @@ async function main(): Promise<void> {
 
   const icoImages: IcoImage[] = [];
   for (const size of ICO_SIZES) {
-    icoImages.push({ size, data: await tile(mark, size, VOID) });
+    icoImages.push({ size, data: await tile(mark, size, null) });
   }
   await emit(join(ROOT, "app", "favicon.ico"), buildIco(icoImages));
 

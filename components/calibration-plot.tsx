@@ -188,8 +188,7 @@ export function CalibrationPlot({
             fill="#ff5a36"
           >
             <title>
-              said {Math.round(point.said)}%, was right {Math.round(point.wasRight)}% (n=
-              {point.n})
+              {`said ${Math.round(point.said)}%, was right ${Math.round(point.wasRight)}% (n=${point.n})`}
             </title>
           </circle>
         ))}
