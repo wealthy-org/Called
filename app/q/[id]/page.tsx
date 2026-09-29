@@ -12,6 +12,7 @@ import { SpreadPlot } from "@/components/spread-plot";
 import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
 import { brierScore } from "@/lib/scoring/brier";
+import { LiveCountdown } from "@/components/live-countdown";
 
 export const dynamic = "force-dynamic";
 
@@ -142,7 +143,7 @@ export default async function QuestionPage({
                     <span className="font-mono text-bone">due</span>
                   ) : (
                     <span className="font-mono tabular-nums text-seal">
-                      {formatCountdown(milestone.at, now)}
+                      <LiveCountdown targetDate={milestone.at} />
                     </span>
                   )}
                 </p>
@@ -310,14 +311,4 @@ export default async function QuestionPage({
   );
 }
 
-function formatCountdown(target: string, now: Date): string {
-  const totalMs = new Date(target).getTime() - now.getTime();
-  if (totalMs <= 0) return "due";
-  const days = Math.floor(totalMs / 86_400_000);
-  const hours = Math.floor((totalMs % 86_400_000) / 3_600_000);
-  const minutes = Math.floor((totalMs % 3_600_000) / 60_000);
-  const seconds = Math.floor((totalMs % 60_000) / 1_000);
-  const pad = (v: number) => String(v).padStart(2, "0");
-  if (days > 0) return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
+

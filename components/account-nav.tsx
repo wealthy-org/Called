@@ -31,7 +31,7 @@ export function AccountNav({ isAdmin }: AccountNavProps) {
       {/* Desktop rail */}
       <nav
         aria-label="Account navigation"
-        className="hidden w-[220px] shrink-0 flex-col gap-1 lg:flex"
+        className="hidden w-[220px] shrink-0 flex-col gap-1 lg:flex lg:sticky lg:top-32 lg:self-start"
       >
         {allItems.map((item) => (
           <Link
