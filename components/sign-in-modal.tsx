@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-const CHAIN_ID = 2021;
-const CHAIN_HEX = "0x7e5";
+export const CHAIN_ID = 46630;
 
 interface EthereumProvider {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;

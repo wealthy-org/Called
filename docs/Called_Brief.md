@@ -59,7 +59,7 @@ Frontend Next.js (App Router), TypeScript, Tailwind CSS, SVG untuk diagram
 Wallet dan sesi wagmi + viem, SIWE, cookie httpOnly
 Database Postgres (Neon atau Supabase), Drizzle ORM
 Hash dan tanda tangan SHA-256, Ed25519 untuk kuitansi
-Chain Robinhood Chain (chain ID 4663), viem, transaksi biasa untuk jangkar
+Chain Robinhood Chain testnet (chain ID 46630), viem, transaksi biasa untuk jangkar
 LLM (House model dan BYOK) OpenRouter (model gratis untuk Cassandra); penyedia lain untuk BYOK
 Hosting Vercel (serverless) + cron terjadwal Vercel untuk penyelesaian dan jangkar
 Test Vitest, Playwright 6. Arsitektur

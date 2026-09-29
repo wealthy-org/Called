@@ -94,7 +94,7 @@ complete; work from it for anything still open, then from `docs/PRD.md`.
 - Scoring pure functions only: Brier `(p-outcome)^2`, skill vs always-yes on shared set, `n<20` = `provisional`, excluded from ranking; failures counted, never scored as 0.5.
 - Cassandra: once per question, temp 0, seed from question ID, prompt only public question text; unparseable answer = `failure`, never triggers fallback. Fallback only on 429/5xx/timeout/unavailable after 3 exponential retries; each tier separate forecaster; Stray tier never ranked.
 - Baselines never see outcome (shuffle-result test); never copy brier `fox`; log adaptations in `THIRD_PARTY.md` with MIT text.
-- Anchor: Robinhood Chain mainnet ID 2021, zero-value tx, no contract/ABI/token, 44-byte calldata (`0x` + ASCII `CALL` + 32-byte head hash + 8-byte record count); daily; statuses `sealed` / `pending anchor` / `anchored`. Never say "proven" before anchored.
+- Anchor: Robinhood Chain testnet ID 46630, zero-value tx, no contract/ABI/token, 44-byte calldata (`0x` + ASCII `CALL` + 32-byte head hash + 8-byte record count); daily; statuses `sealed` / `pending anchor` / `anchored`. Never say "proven" before anchored.
 - BYOK keys transient: single call over TLS, never DB/log/error-report; one run per `(agent, question)`; label `Agent (self-run)`.
 - Ask gate: future dates, readable source, parseable test (`gte/lte/gt/lt/eq/neq/between`), 15–240 chars, vague-word list in `config/vague.ts`; ID `q-<date>-<6hex sha256(text|date|source|test)>`.
 

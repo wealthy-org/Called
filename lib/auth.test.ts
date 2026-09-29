@@ -1,5 +1,7 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
+import { CHAIN_ID as MODAL_CHAIN_ID } from "../components/sign-in-modal";
+import { ROBINHOOD_CHAIN_ID } from "./env";
 import {
   buildSiweMessage,
   newNonce,
@@ -22,14 +24,14 @@ const fields: SiweMessageFields = {
   statement: "Sign in to Called.",
   uri: "https://called.finance",
   version: "1",
-  chainId: 2021,
+  chainId: ROBINHOOD_CHAIN_ID,
   nonce: "0123456789abcdef0123456789abcdef",
   issuedAt: new Date().toISOString(),
 };
 
 const expected = {
   expectedNonce: fields.nonce,
-  expectedChainId: 2021,
+  expectedChainId: ROBINHOOD_CHAIN_ID,
   expectedDomain: "called.finance",
   expectedUri: "https://called.finance",
 };
@@ -52,7 +54,7 @@ describe("buildSiweMessage", () => {
     expect(lines[1]).toBe(account.address);
     expect(lines[3]).toBe(fields.statement);
     expect(message).toContain("Version: 1");
-    expect(message).toContain("Chain ID: 2021");
+    expect(message).toContain(`Chain ID: ${ROBINHOOD_CHAIN_ID}`);
     expect(message).toContain(`Nonce: ${fields.nonce}`);
   });
 
@@ -172,5 +174,11 @@ describe("sessionCookieOptions", () => {
     expect(sessionCookieOptions.secure).toBe(true);
     expect(sessionCookieOptions.sameSite).toBe("lax");
     expect(sessionCookieOptions.path).toBe("/");
+  });
+});
+
+describe("chain id agreement", () => {
+  it("sign-in modal signs the same chain the server verifies", () => {
+    expect(MODAL_CHAIN_ID).toBe(ROBINHOOD_CHAIN_ID);
   });
 });

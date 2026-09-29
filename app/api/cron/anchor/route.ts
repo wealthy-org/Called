@@ -15,7 +15,7 @@ function cronAuthorized(request: Request, secret: string): boolean {
 }
 
 /**
- * Plants the chain head on Robinhood Chain mainnet (ID 2021) as 44-byte calldata on a
+ * Plants the chain head on Robinhood Chain testnet (ID 46630) as 44-byte calldata on a
  * zero-value transaction. Runs daily via `Authorization: Bearer $CRON_SECRET`.
  * No contract, no ABI, no token: the head hash and record count travel inside
  * the transaction data itself.

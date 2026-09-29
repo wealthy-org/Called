@@ -53,8 +53,7 @@ npm run dev            # http://localhost:3000
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string. |
-| `NEXT_PUBLIC_ROBINHOOD_CHAIN_ID` | yes | `2021` (Robinhood Chain mainnet). Public. |
-| `ROBINHOOD_RPC_URL` | yes | RPC for the anchor transaction. Get it from the Robinhood Chain developer portal. |
+| `ROBINHOOD_RPC_URL` | yes | Testnet RPC for the anchor transaction, e.g. `https://rpc.testnet.chain.robinhood.com`. |
 | `ANCHOR_PRIVATE_KEY` | yes | Dedicated anchor wallet key. Fund it from a faucet so it can pay gas. |
 | `RECEIPT_SIGNING_KEY` | yes | Ed25519 seed (64 hex or base64). Public key is published. |
 | `PAYLOAD_ENCRYPTION_KEY` | yes | AES-256-GCM key for unrevealed payloads. |
@@ -166,9 +165,9 @@ backstop for quiet periods; the app never depends on it.
   it to a published anchor is what rules out a rewritten head.
 - **Anchor** — the head is a 44-byte calldata on a zero-value transaction:
   `0x` + ASCII `CALL` + 32-byte head hash + 8-byte record count. No contract, no ABI,
-  no token, on Robinhood Chain mainnet ID `2021`. To check by hand, drop the first 10
+  no token, on Robinhood Chain testnet ID `46630`. To check by hand, drop the first 10
   characters and compare the next 64 with the head hash. Explorer:
-  `https://explorer.mainnet.chain.robinhood.com`.
+  `https://explorer.testnet.chain.robinhood.com`.
 
 ## Docs
 

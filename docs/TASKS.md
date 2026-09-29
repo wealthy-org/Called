@@ -89,7 +89,7 @@ Pemecahan PRD + Architecture menjadi task granular. Kerangka fase mengikuti PRD 
 
 | ID | Judul | Deskripsi | Dependency | File/area terdampak | Acceptance criteria | Estimasi |
 |----|-------|-----------|------------|---------------------|--------------------|----|
-| T-054 | [CRITICAL] Implementasikan Anchor on-chain | Hash kepala ditanam sebagai calldata 44 byte pada zero-value tx di Robinhood Chain mainnet (ID 2021): `0x + tag ASCII + 32 byte hash + 8 byte record count`. Tanpa kontrak/ABI/token. | T-001 | `lib/anchor.ts` | Calldata 44 byte benar; tx zero-value; tanpa ABI. Test terkait: §25 #9. | M |
+| T-054 | [CRITICAL] Implementasikan Anchor on-chain | Hash kepala ditanam sebagai calldata 44 byte pada zero-value tx di Robinhood Chain testnet (ID 46630): `0x + tag ASCII + 32 byte hash + 8 byte record count`. Tanpa kontrak/ABI/token. | T-001 | `lib/anchor.ts` | Calldata 44 byte benar; tx zero-value; tanpa ABI. Test terkait: §25 #9. | M |
 | T-055 | Tulis test Anchor calldata | Test format calldata 44 byte dan kesamaan hash kepala dengan hasil hitung ulang. | T-054 | `lib/anchor.test.ts` | §25 #9 (format + isi). | S |
 | T-056 | [OPS] Buat cron anchor (harian + saat close) | Jalankan harian dan saat pertanyaan tutup; simpan tx_hash, block_number, block_time di `anchors`; dompet khusus saldo kecil + alarm. | T-054 | `app/api/cron/anchor/route.ts` | Anchor jalan harian dan saat close; status tercatat. | M |
 | T-057 | Implementasikan status rekaman (sealed/pending anchor/anchored) | Setiap rekaman menampilkan status; "proven" hanya untuk yang sudah anchored. | T-056 | `lib/anchor-status.ts` | Label status benar; anchored menampilkan block. Test terkait: §25 #9. | S |
