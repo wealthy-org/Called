@@ -1,10 +1,19 @@
 import "server-only";
-import { asc, desc, eq, inArray } from "drizzle-orm";
-import { anchors, forecasters, questions, receipts, sealReveals, seals } from "@/db/schema";
+import { asc, desc, eq, inArray, and } from "drizzle-orm";
+import { agentRuns, anchors, forecasters, questions, receipts, sealReveals, seals } from "@/db/schema";
 import { anchorStatusFor, type AnchorRecord } from "@/lib/anchor-status";
 import { parseRevealPayload } from "@/lib/reveal";
 import { readSession } from "@/lib/session";
 import { db } from "@/db";
+import { listAgents } from "@/lib/agent-store";
+
+export type AgentRecord = {
+  id: string;
+  name: string;
+  model: string | null;
+  providerEndpoint: string | null;
+  promptHash: string | null;
+};
 
 export type RevealRow = {
   sealId: string;
@@ -50,6 +59,7 @@ export type QuestionDossier = {
   };
   reveals: RevealRow[];
   mySeal: MySealRow | null;
+  userAgents: AgentRecord[];
 };
 
 async function confirmedAnchors(): Promise<AnchorRecord[]> {
@@ -206,5 +216,32 @@ export async function loadQuestionDossier(
     }
   }
 
-  return { question: q, reveals, mySeal };
+  let userAgents: AgentRecord[] = [];
+  if (session !== null) {
+    const allAgents = await listAgents(session.address);
+    if (allAgents.length > 0) {
+      const agentIds = allAgents.map((a) => a.id);
+      const runRows = await db
+        .select({ forecasterId: agentRuns.forecasterId })
+        .from(agentRuns)
+        .where(
+          and(
+            inArray(agentRuns.forecasterId, agentIds),
+            eq(agentRuns.questionId, id),
+          ),
+        );
+      const runAgentIds = new Set(runRows.map((r) => r.forecasterId));
+      userAgents = allAgents
+        .filter((a) => !runAgentIds.has(a.id))
+        .map((a) => ({
+          id: a.id,
+          name: a.name,
+          model: a.model,
+          providerEndpoint: a.providerEndpoint,
+          promptHash: a.promptHash,
+        }));
+    }
+  }
+
+  return { question: q, reveals, mySeal, userAgents };
 }

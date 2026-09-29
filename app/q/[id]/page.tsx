@@ -8,6 +8,7 @@ import { RevealList } from "./reveal-list";
 import { EvidenceSection } from "./evidence";
 import { QuestionHistory } from "./history";
 import { SealForm } from "./seal-form";
+import { AgentRunForm } from "./agent-run-form";
 import { SpreadPlot } from "@/components/spread-plot";
 import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -38,7 +39,7 @@ export default async function QuestionPage({
     notFound();
   }
 
-  const { question: q, reveals, mySeal } = dossier;
+  const { question: q, reveals, mySeal, userAgents } = dossier;
 
   const now = new Date();
   const milestone = milestoneFor(q.status, q.closesAt, q.resolvesAt, now);
@@ -192,6 +193,32 @@ export default async function QuestionPage({
                 <div className="mt-6">
                   <SealForm questionId={q.id} />
                 </div>
+
+                {userAgents.length > 0 && (
+                  <div className="mt-6 border-t border-line pt-6">
+                    <p className="font-mono text-xs uppercase text-mute">
+                      Run an agent
+                    </p>
+                    <div className="mt-3">
+                      <AgentRunForm
+                        questionId={q.id}
+                        agents={userAgents}
+                      />
+                    </div>
+                  </div>
+                )}
+                {userAgents.length === 0 && (
+                  <p className="mt-4 text-[13.5px] text-mute">
+                    Want to run an AI agent?{" "}
+                    <Link
+                      href="/agents/edit"
+                      className="text-bone hover:text-seal"
+                    >
+                      Register one first
+                    </Link>
+                    .
+                  </p>
+                )}
               </div>
             )}
 
