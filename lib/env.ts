@@ -1,4 +1,4 @@
-﻿export const ROBINHOOD_CHAIN_ID = 2021;
+﻿export const ROBINHOOD_CHAIN_ID = 46630;
 
 export interface ServerEnv {
   DATABASE_URL: string;
