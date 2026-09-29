@@ -18,9 +18,32 @@ export type ByokOutcome =
   | { ok: false; kind: "unparseable"; raw: string; reason: string }
   | { ok: false; kind: "unavailable"; status: number | null; message: string };
 
+export const BYOK_SYSTEM_PROMPT =
+  'Answer with only a JSON object: {"p": <probability 0-1>, "why": "<short reason>"}. No other text.';
+
 export interface ByokDeps {
   fetch: typeof fetch;
   timeoutMs?: number;
+}
+
+function buildByokBody(
+  model: string,
+  questionText: string,
+  withResponseFormat: boolean,
+): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    model,
+    temperature: 0,
+    max_tokens: 200,
+    messages: [
+      { role: "system", content: BYOK_SYSTEM_PROMPT },
+      { role: "user", content: questionText.trim() },
+    ],
+  };
+  if (withResponseFormat) {
+    body.response_format = { type: "json_object" };
+  }
+  return body;
 }
 
 export function normalizeByokEndpoint(raw: string): string | null {
@@ -115,30 +138,38 @@ export async function runByokAgent(
     };
   }
 
-  const body = {
-    model: request.model,
-    temperature: 0,
-    max_tokens: 200,
-    messages: [{ role: "user", content: request.questionText.trim() }],
-  };
-
-  let response: Response;
-  try {
-    response = await deps.fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${request.apiKey}`,
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(deps.timeoutMs ?? BYOK_TIMEOUT_MS),
-    });
-  } catch (error) {
+  let response: Response | null = null;
+  for (const withResponseFormat of [true, false]) {
+    try {
+      response = await deps.fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${request.apiKey}`,
+        },
+        body: JSON.stringify(
+          buildByokBody(request.model, request.questionText, withResponseFormat),
+        ),
+        signal: AbortSignal.timeout(deps.timeoutMs ?? BYOK_TIMEOUT_MS),
+      });
+    } catch (error) {
+      return {
+        ok: false,
+        kind: "unavailable",
+        status: null,
+        message: error instanceof Error ? error.message : "request failed",
+      };
+    }
+    if (response.status !== 400 || !withResponseFormat) {
+      break;
+    }
+  }
+  if (response === null) {
     return {
       ok: false,
       kind: "unavailable",
       status: null,
-      message: error instanceof Error ? error.message : "request failed",
+      message: "request failed",
     };
   }
 

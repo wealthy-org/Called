@@ -12,6 +12,7 @@ import { AgentRunForm } from "./agent-run-form";
 import { SpreadPlot } from "@/components/spread-plot";
 import { WorkspaceFooter } from "@/components/workspace-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CopyValue } from "@/components/copy-value";
 import { brierScore } from "@/lib/scoring/brier";
 import { LiveCountdown } from "@/components/live-countdown";
 
@@ -72,7 +73,9 @@ export default async function QuestionPage({
         <dl className="dossier-identity">
           <div className="dossier-id-item">
             <dt>ID</dt>
-            <dd className="font-mono text-xs text-mute">{q.id}</dd>
+            <dd>
+              <CopyValue value={q.id} />
+            </dd>
           </div>
           <div className="dossier-id-item">
             <dt>STATUS</dt>

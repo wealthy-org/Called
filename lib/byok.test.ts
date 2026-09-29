@@ -148,6 +148,40 @@ describe("runByokAgent", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("retries without response_format when the provider rejects it with 400", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ error: "bad request" }, 400))
+      .mockResolvedValueOnce(completion('{"p":0.6,"why":"ok"}'));
+    const result = await runByokAgent({ fetch: fetchMock }, request);
+    expect(result).toMatchObject({ ok: true, forecast: { p: 0.6 } });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const firstBody = JSON.parse(
+      (fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1]
+        .body as string,
+    );
+    const secondBody = JSON.parse(
+      (fetchMock.mock.calls[1] as unknown as [string, RequestInit])[1]
+        .body as string,
+    );
+    expect(firstBody.response_format).toEqual({ type: "json_object" });
+    expect(secondBody.response_format).toBeUndefined();
+    expect(secondBody.messages[0]).toMatchObject({ role: "system" });
+  });
+
+  it("sends a system prompt demanding JSON", async () => {
+    const fetchMock = vi.fn(async () => completion('{"p":0.5,"why":"x"}'));
+    await runByokAgent({ fetch: fetchMock }, request);
+    const body = JSON.parse(
+      (fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1]
+        .body as string,
+    );
+    expect(body.messages[0].role).toBe("system");
+    expect(body.messages[0].content).toContain('"p"');
+    expect(body.messages[1].role).toBe("user");
+    expect(body.messages[1].content).toBe("Will it rain tomorrow?");
+  });
+
   it("rejects a non-https endpoint before calling the network", async () => {
     const fetchMock = vi.fn();
     const result = await runByokAgent(
