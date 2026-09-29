@@ -130,13 +130,23 @@ export function SpreadPlot({ forecasts, outcome, className }: SpreadPlotProps) {
             marginTop: marker.lane === "up" ? -marker.offset : marker.offset,
           }}
         >
-          <i aria-hidden="true" />
-          <span>{marker.forecast.label}</span>
-          <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+          {marker.lane === "up" ? (
+            <>
+              <span>{marker.forecast.label}</span>
+              <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+              <i aria-hidden="true" />
+            </>
+          ) : (
+            <>
+              <i aria-hidden="true" />
+              <span>{marker.forecast.label}</span>
+              <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+            </>
+          )}
         </span>
       ))}
       {outcome !== undefined && (
-        <span className="mk dn out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
+        <span className="mk down out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
       )}
     </figure>
   );

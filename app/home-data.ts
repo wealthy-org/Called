@@ -61,7 +61,21 @@ export interface HomeQuestionView {
   question: QuestionDetail;
 }
 
-const MAX_HOME_RESULT_FORECASTS = 5;
+export const SAMPLE_HOME_RESULT: HomeResultView = {
+  questionId: "sample",
+  questionText:
+    "The NVDA token closed at $212.40 (sample), so the test gte 210 passed. Nobody decided this afterwards; the source and test were fixed before any forecast existed.",
+  test: "gte 210",
+  outcome: true,
+  readingValue: "212.40",
+  forecasts: [
+    { id: "sample-hedgehog", label: "hedgehog", p: 0.09 },
+    { id: "sample-drunk", label: "drunk", p: 0.4 },
+    { id: "sample-drift", label: "drift", p: 0.42 },
+    { id: "sample-parrot", label: "parrot", p: 0.77 },
+    { id: "sample-cassandra", label: "Cassandra", p: 0.81 },
+  ],
+};
 
 export interface HomeSessionView {
   headHash: string | null;
@@ -173,62 +187,6 @@ export async function loadHomeLedger(): Promise<HomeLedgerView> {
       }))
       .reverse(),
     total: head === undefined ? 0 : head.recordIndex + 1,
-  };
-}
-
-export async function loadHomeResult(options?: {
-  maxForecasts?: number | null;
-}): Promise<HomeResultView | null> {
-  const limit = options?.maxForecasts ?? MAX_HOME_RESULT_FORECASTS;
-
-  const [settled] = await db
-    .select({
-      id: questions.id,
-      text: questions.text,
-      test: questions.test,
-      outcome: questions.outcome,
-      readingValue: questions.readingValue,
-    })
-    .from(questions)
-    .where(eq(questions.status, "settled"))
-    .orderBy(desc(questions.resolvesAt))
-    .limit(1);
-
-  if (settled === undefined || settled.outcome === null) {
-    return null;
-  }
-
-  const reveals = await db
-    .select({
-      forecasterId: seals.forecasterId,
-      label: forecasters.name,
-      payloadJson: sealReveals.payloadJson,
-    })
-    .from(sealReveals)
-    .innerJoin(seals, eq(sealReveals.sealId, seals.id))
-    .innerJoin(forecasters, eq(seals.forecasterId, forecasters.id))
-    .where(eq(seals.questionId, settled.id))
-    .orderBy(asc(seals.recordIndex));
-
-  const forecasts: SpreadForecast[] = [];
-  for (const reveal of reveals) {
-    if (limit !== null && forecasts.length >= limit) {
-      break;
-    }
-    const p = parsePayloadProbability(reveal.payloadJson);
-    if (p === null) {
-      continue;
-    }
-    forecasts.push({ id: reveal.forecasterId, label: reveal.label, p });
-  }
-
-  return {
-    questionId: settled.id,
-    questionText: settled.text,
-    test: settled.test,
-    outcome: settled.outcome,
-    readingValue: settled.readingValue,
-    forecasts,
   };
 }
 

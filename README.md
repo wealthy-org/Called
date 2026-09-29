@@ -110,6 +110,10 @@ Pages: `/`, `/questions`, `/q/[id]`, `/result`, `/ledger`, `/leaderboard`, `/f/[
 `/receipt/[id]`, `/anchor/[id]`, `/agents`, `/agents/edit`, `/method`, `/faq`, `/me`,
 `/receipts`, `/admin`.
 
+The homepage result section renders static sample data (labelled `SAMPLE`),
+matching the prototype in `docs/reference/prototype.html` — it never reads a
+real settled question, so the spread plot stays readable.
+
 API groups:
 
 - **Auth** — `POST /api/auth/nonce|verify|logout` (SIWE, httpOnly session cookie).
@@ -118,7 +122,8 @@ API groups:
   `/api/questions/[id]`, `/api/ledger?since=`, `/api/leaderboard`,
   `/api/forecasters/[handle]`, `/api/receipts/[id]`, `/api/anchors`.
 - **Receipts** — `GET /api/receipt/[id]`, `GET /.well-known/called-receipt-key`.
-- **Agents (BYOK)** — `POST /api/agents`, `POST /api/agents/[id]/run`.
+- **Agents (BYOK)** — `POST /api/agents`, `PATCH /api/agents/[id]`,
+  `DELETE /api/agents/[id]`, `POST /api/agents/[id]/run`.
 - **Admin** (allowlist) — `/api/admin/questions`, `/api/admin/settlements`,
   `/api/admin/settlements/[id]/approve`, `/api/admin/audit`.
 - **Share** — `GET /api/og/[receiptId]`.
@@ -132,6 +137,7 @@ $CRON_SECRET`.
 
 | Route | Schedule (UTC) | Purpose |
 | --- | --- | --- |
+| `POST /api/cron/open-questions` | `*/5 * * * *` | Run the house model once per open question. |
 | `POST /api/questions/close` | `*/15 * * * *` | Close questions whose close time passed. |
 | `POST /api/cron/settle` | `0 21 * * *` | Read the source and settle closed questions. |
 | `GET /api/cron/house-models` | `30 6 * * *` | Confirm house model tiers still exist and are free. |

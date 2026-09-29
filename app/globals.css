@@ -527,7 +527,7 @@ body {
 
 .home-page .spread .mk.up,
 .result-view .spread .mk.up {
-  top: 95px;
+  bottom: 105px;
 }
 
 .home-page .spread .mk.up i,
@@ -2688,6 +2688,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .report-meta-label {
@@ -2700,6 +2701,7 @@ body {
 
 .report-meta-value {
   color: var(--bone);
+  overflow-wrap: anywhere;
 }
 
 .report-spread-section {

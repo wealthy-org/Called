@@ -16,8 +16,8 @@ import {
   loadHomeLedger,
   loadHomeMethod,
   loadHomeQuestion,
-  loadHomeResult,
   loadHomeSession,
+  SAMPLE_HOME_RESULT,
 } from "./home-data";
 import type { ReactNode } from "react";
 
@@ -28,15 +28,16 @@ function shorten(hash: string): string {
 }
 
 export default async function Home() {
-  const [session, question, ledger, leaderboard, result, method] =
+  const [session, question, ledger, leaderboard, method] =
     await Promise.all([
       loadHomeSession(),
       loadHomeQuestion(),
       loadHomeLedger(),
       loadLeaderboardPage(),
-      loadHomeResult(),
       loadHomeMethod(),
     ]);
+
+  const result = SAMPLE_HOME_RESULT;
 
   const calibrationLabels: Record<string, string> = {};
   for (const entry of [...leaderboard.ranked, ...leaderboard.provisional]) {
@@ -44,14 +45,12 @@ export default async function Home() {
   }
 
   const scored =
-    result === null
-      ? []
-      : result.forecasts
-          .map((forecast) => ({
-            label: forecast.label,
-            brier: brierScore(forecast.p, result.outcome),
-          }))
-          .sort((a, b) => a.brier - b.brier);
+    result.forecasts
+      .map((forecast) => ({
+        label: forecast.label,
+        brier: brierScore(forecast.p, result.outcome),
+      }))
+      .sort((a, b) => a.brier - b.brier);
 
   return (
     <div className="home-page">
@@ -79,16 +78,10 @@ export default async function Home() {
       </Section>
 
       <Section id="result" index={1}>
-        {result === null ? (
-          <Empty>
-            No settled questions yet. Results appear here once a question is
-            resolved.
-          </Empty>
-        ) : (
-          <>
-             <div className="result-view rgrid grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
-               <div>
-                 <p className="kicker">AFTER SETTLEMENT</p>
+        <>
+          <div className="result-view rgrid grid items-center gap-16 lg:grid-cols-[0.9fr_1.4fr]">
+            <div>
+              <p className="kicker">AFTER SETTLEMENT, SAMPLE</p>
                  <p className="verdict font-display text-[clamp(96px,17vw,230px)] leading-[0.82] font-black text-bone">
                   {result.outcome ? "YES" : "NO"}
                 </p>
@@ -102,23 +95,14 @@ export default async function Home() {
                 ) : null}
               </div>
                <div>
-                 <p className="result-explanation max-w-[520px] text-mute">
-                   When the source reports a number, the test settles the question. Every forecaster is plotted at the probability they sealed.
-                 </p>
                  <SpreadPlot forecasts={result.forecasts} outcome={result.outcome} />
              {scored.length > 0 && (
                  <div className="scores-wrap overflow-x-auto">
                  <table className="scores w-full border-collapse text-left">
                   <caption className="sr-only">
                     Each forecaster&apos;s Brier score on this question
+                    (sample data)
                   </caption>
-                  <thead>
-                    <tr className="border-b border-line text-xs uppercase tracking-wider text-mute">
-                      <th className="py-3 pr-4 font-medium">Forecaster</th>
-                      <th className="py-3 pr-4 font-medium">Brier</th>
-                      <th className="py-3 font-medium">Bar</th>
-                    </tr>
-                  </thead>
                   <tbody>
                     {scored.map((row, i) => (
                       <tr key={row.label} className="border-b border-line">
@@ -154,7 +138,6 @@ export default async function Home() {
                </div>
              </div>
           </>
-        )}
       </Section>
 
        <Section id="ledger" index={2} tone="ink">
