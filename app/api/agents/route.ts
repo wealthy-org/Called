@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateAgentInput } from "@/lib/byok";
-import { listAgents, registerAgent } from "@/lib/agent-store";
+import { listAgents, registerAgent, sealCountsByOwner } from "@/lib/agent-store";
 import { readSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,12 @@ export async function GET() {
     return NextResponse.json({ error: "sign in to view agents" }, { status: 401 });
   }
   const agents = await listAgents(session.address);
-  return NextResponse.json({ agents, count: agents.length });
+  const sealCounts = await sealCountsByOwner(session.address);
+  const withCounts = agents.map((agent) => ({
+    ...agent,
+    sealCount: sealCounts[agent.id] ?? 0,
+  }));
+  return NextResponse.json({ agents: withCounts, count: withCounts.length });
 }
 
 export async function POST(request: Request) {

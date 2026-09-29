@@ -36,6 +36,23 @@ interface AgentSummary {
   model: string | null;
   providerEndpoint: string | null;
   promptHash: string | null;
+  sealCount: number;
+}
+
+interface EditDraft {
+  name: string;
+  model: string;
+  providerEndpoint: string;
+  promptHash: string;
+}
+
+function toEditDraft(agent: AgentSummary): EditDraft {
+  return {
+    name: agent.name,
+    model: agent.model ?? "",
+    providerEndpoint: agent.providerEndpoint ?? "",
+    promptHash: agent.promptHash ?? "",
+  };
 }
 
 function parseAgents(body: unknown): AgentSummary[] {
@@ -65,6 +82,7 @@ function parseAgents(body: unknown): AgentSummary[] {
           : null,
       promptHash:
         typeof entry.promptHash === "string" ? entry.promptHash : null,
+      sealCount: typeof entry.sealCount === "number" ? entry.sealCount : 0,
     });
   }
   return agents;
@@ -104,6 +122,20 @@ export default function AgentsEditPage() {
 
   const [reloadKey, setReloadKey] = useState(0);
   const [signInOpen, setSignInOpen] = useState(false);
+
+  const [editAgentId, setEditAgentId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<EditDraft>({
+    name: "",
+    model: "",
+    providerEndpoint: "",
+    promptHash: "",
+  });
+  const [editStatus, setEditStatus] = useState<"idle" | "sending">("idle");
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const [deleteAgentId, setDeleteAgentId] = useState<string | null>(null);
+  const [deleteStatus, setDeleteStatus] = useState<"idle" | "sending">("idle");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const reload = useCallback(() => {
     setLoadState("loading");
@@ -221,6 +253,73 @@ export default function AgentsEditPage() {
     }
   }
 
+  async function onEdit(event: React.FormEvent, agentId: string) {
+    event.preventDefault();
+    setEditStatus("sending");
+    setEditError(null);
+    try {
+      const response = await fetch(`/api/agents/${agentId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: editDraft.name,
+          model: editDraft.model,
+          providerEndpoint: editDraft.providerEndpoint,
+          promptHash:
+            editDraft.promptHash.trim() === ""
+              ? null
+              : editDraft.promptHash.trim(),
+        }),
+      });
+      const body: unknown = await response.json();
+      if (!response.ok) {
+        if (response.status === 401) {
+          setSignInOpen(true);
+        }
+        setEditStatus("idle");
+        setEditError(
+          readString(body, "error") ||
+            `update failed with status ${response.status}`,
+        );
+        return;
+      }
+      setEditAgentId(null);
+      setEditStatus("idle");
+      reload();
+    } catch {
+      setEditStatus("idle");
+      setEditError("network error, could not update the agent");
+    }
+  }
+
+  async function onDelete(agentId: string) {
+    setDeleteStatus("sending");
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/agents/${agentId}`, {
+        method: "DELETE",
+      });
+      const body: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) {
+          setSignInOpen(true);
+        }
+        setDeleteStatus("idle");
+        setDeleteError(
+          (body !== null && readString(body, "error")) ||
+            `delete failed with status ${response.status}`,
+        );
+        return;
+      }
+      setDeleteAgentId(null);
+      setDeleteStatus("idle");
+      reload();
+    } catch {
+      setDeleteStatus("idle");
+      setDeleteError("network error, could not delete the agent");
+    }
+  }
+
   return (
     <div>
       <h1 className="font-display text-3xl text-bone">Manage agents</h1>
@@ -326,136 +425,310 @@ export default function AgentsEditPage() {
                 key={agent.id}
                 className="border-t border-line py-5 first:border-t-0"
               >
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <span className="text-bone">{agent.name}</span>
-                  <span className="font-mono text-xs text-mute">
-                    {agent.id}
-                  </span>
-                </div>
-                <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-mute">
-                  <div className="flex gap-2">
-                    <dt>MODEL</dt>
-                    <dd className="text-bone">{agent.model ?? "—"}</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt>ENDPOINT</dt>
-                    <dd className="text-bone">
-                      {agent.providerEndpoint ?? "—"}
-                    </dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt>PROMPT</dt>
-                    <dd className="text-bone">
-                      {agent.promptHash === null
-                        ? "—"
-                        : `${agent.promptHash.slice(0, 12)}…`}
-                    </dd>
-                  </div>
-                </dl>
-
-                {runAgentId === agent.id ? (
+                {editAgentId === agent.id ? (
                   <form
-                    onSubmit={(event) => onRun(event, agent.id)}
-                    className="mt-4 flex flex-col gap-3 rounded-panel border border-line bg-ink p-4"
+                    onSubmit={(event) => onEdit(event, agent.id)}
+                    className="flex flex-col gap-3 rounded-panel border border-line bg-ink p-4"
                   >
-                    <p className="font-mono text-xs text-seal">
-                      Your key is sent over TLS for exactly one call, then
-                      discarded. It is never stored, logged, or added to error
-                      reports. Your provider may charge you for this call.
+                    <p className="font-mono text-xs uppercase text-mute">
+                      Edit agent
                     </p>
                     <label className="flex flex-col gap-1">
                       <span className="font-mono text-xs uppercase text-mute">
-                        Question ID
+                        Name
                       </span>
                       <input
-                        value={questionId}
-                        onChange={(event) => setQuestionId(event.target.value)}
-                        placeholder="q-2026-10-03-1a2b3c"
+                        value={editDraft.name}
+                        onChange={(event) =>
+                          setEditDraft({ ...editDraft, name: event.target.value })
+                        }
                         required
-                        className="h-11 w-full rounded-field border border-line bg-void px-3 font-mono text-sm text-bone"
+                        className="h-11 w-full rounded-field border border-line bg-void px-3 text-bone"
                       />
                     </label>
                     <label className="flex flex-col gap-1">
                       <span className="font-mono text-xs uppercase text-mute">
-                        API key
+                        Model
                       </span>
                       <input
-                        value={apiKey}
-                        onChange={(event) => setApiKey(event.target.value)}
-                        type="password"
-                        autoComplete="off"
+                        value={editDraft.model}
+                        onChange={(event) =>
+                          setEditDraft({ ...editDraft, model: event.target.value })
+                        }
                         required
+                        className="h-11 w-full rounded-field border border-line bg-void px-3 text-bone"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="font-mono text-xs uppercase text-mute">
+                        Provider endpoint
+                      </span>
+                      <input
+                        value={editDraft.providerEndpoint}
+                        onChange={(event) =>
+                          setEditDraft({
+                            ...editDraft,
+                            providerEndpoint: event.target.value,
+                          })
+                        }
+                        type="url"
+                        placeholder="https://provider.example/v1/chat/completions"
+                        required
+                        className="h-11 w-full rounded-field border border-line bg-void px-3 text-bone"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="font-mono text-xs uppercase text-mute">
+                        Prompt hash (optional)
+                      </span>
+                      <input
+                        value={editDraft.promptHash}
+                        onChange={(event) =>
+                          setEditDraft({
+                            ...editDraft,
+                            promptHash: event.target.value,
+                          })
+                        }
+                        placeholder="64 hex characters"
                         className="h-11 w-full rounded-field border border-line bg-void px-3 font-mono text-sm text-bone"
                       />
                     </label>
                     <div className="flex flex-wrap gap-3">
                       <button
                         type="submit"
-                        disabled={runStatus === "sending"}
+                        disabled={editStatus === "sending"}
                         className="h-11 rounded-field border border-bone bg-transparent px-5 font-mono text-sm uppercase text-bone hover:border-seal hover:text-seal disabled:opacity-50"
                       >
-                        {runStatus === "sending" ? "Running" : "Run my agent"}
+                        {editStatus === "sending" ? "Saving" : "Save changes"}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setRunAgentId(null);
-                          setRunError(null);
-                          setRunResult(null);
-                          setApiKey("");
+                          setEditAgentId(null);
+                          setEditError(null);
                         }}
                         className="h-11 rounded-field border border-line px-5 font-mono text-sm uppercase text-mute hover:text-bone"
                       >
                         Cancel
                       </button>
                     </div>
-                    {runError !== null ? (
+                    {editError !== null ? (
                       <p role="alert" className="font-mono text-sm text-seal">
-                        {runError}
+                        {editError}
                       </p>
-                    ) : null}
-                    {runResult !== null ? (
-                      <div aria-live="polite" className="border-t border-line pt-3">
-                        <p className="font-mono text-xs uppercase text-mute">
-                          Sealed
-                        </p>
-                        <p className="mt-1 font-display text-2xl text-bone tabular-nums">
-                          {Number.isNaN(runResult.p)
-                            ? "—"
-                            : runResult.p.toFixed(2)}
-                        </p>
-                        <p className="mt-1 text-sm text-mute">
-                          {runResult.why}
-                        </p>
-                        <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-mute">
-                          <div className="flex gap-2">
-                            <dt>INDEX</dt>
-                            <dd className="text-bone">
-                              {runResult.recordIndex}
-                            </dd>
-                          </div>
-                          <div className="flex gap-2">
-                            <dt>COMMIT</dt>
-                            <dd className="break-all text-bone">
-                              {runResult.commit}
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
                     ) : null}
                   </form>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRunAgentId(agent.id);
-                      setRunError(null);
-                      setRunResult(null);
-                    }}
-                    className="mt-3 h-11 rounded-field border border-line px-4 font-mono text-xs uppercase text-mute hover:border-seal hover:text-seal"
-                  >
-                    Run my agent
-                  </button>
+                  <>
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                      <span className="text-bone">{agent.name}</span>
+                      <span className="font-mono text-xs text-mute">
+                        {agent.id}
+                      </span>
+                    </div>
+                    <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-mute">
+                      <div className="flex gap-2">
+                        <dt>MODEL</dt>
+                        <dd className="text-bone">{agent.model ?? "—"}</dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt>ENDPOINT</dt>
+                        <dd className="text-bone">
+                          {agent.providerEndpoint ?? "—"}
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt>PROMPT</dt>
+                        <dd className="text-bone">
+                          {agent.promptHash === null
+                            ? "—"
+                            : `${agent.promptHash.slice(0, 12)}…`}
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt>SEALED</dt>
+                        <dd className="text-bone">{agent.sealCount}</dd>
+                      </div>
+                    </dl>
+
+                    {runAgentId === agent.id ? (
+                      <form
+                        onSubmit={(event) => onRun(event, agent.id)}
+                        className="mt-4 flex flex-col gap-3 rounded-panel border border-line bg-ink p-4"
+                      >
+                        <p className="font-mono text-xs text-seal">
+                          Your key is sent over TLS for exactly one call, then
+                          discarded. It is never stored, logged, or added to
+                          error reports. Your provider may charge you for this
+                          call.
+                        </p>
+                        <label className="flex flex-col gap-1">
+                          <span className="font-mono text-xs uppercase text-mute">
+                            Question ID
+                          </span>
+                          <input
+                            value={questionId}
+                            onChange={(event) =>
+                              setQuestionId(event.target.value)
+                            }
+                            placeholder="q-2026-10-03-1a2b3c"
+                            required
+                            className="h-11 w-full rounded-field border border-line bg-void px-3 font-mono text-sm text-bone"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1">
+                          <span className="font-mono text-xs uppercase text-mute">
+                            API key
+                          </span>
+                          <input
+                            value={apiKey}
+                            onChange={(event) => setApiKey(event.target.value)}
+                            type="password"
+                            autoComplete="off"
+                            required
+                            className="h-11 w-full rounded-field border border-line bg-void px-3 font-mono text-sm text-bone"
+                          />
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            type="submit"
+                            disabled={runStatus === "sending"}
+                            className="h-11 rounded-field border border-bone bg-transparent px-5 font-mono text-sm uppercase text-bone hover:border-seal hover:text-seal disabled:opacity-50"
+                          >
+                            {runStatus === "sending"
+                              ? "Running"
+                              : "Run my agent"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRunAgentId(null);
+                              setRunError(null);
+                              setRunResult(null);
+                              setApiKey("");
+                            }}
+                            className="h-11 rounded-field border border-line px-5 font-mono text-sm uppercase text-mute hover:text-bone"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        {runError !== null ? (
+                          <p role="alert" className="font-mono text-sm text-seal">
+                            {runError}
+                          </p>
+                        ) : null}
+                        {runResult !== null ? (
+                          <div
+                            aria-live="polite"
+                            className="border-t border-line pt-3"
+                          >
+                            <p className="font-mono text-xs uppercase text-mute">
+                              Sealed
+                            </p>
+                            <p className="mt-1 font-display text-2xl text-bone tabular-nums">
+                              {Number.isNaN(runResult.p)
+                                ? "—"
+                                : runResult.p.toFixed(2)}
+                            </p>
+                            <p className="mt-1 text-sm text-mute">
+                              {runResult.why}
+                            </p>
+                            <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-mute">
+                              <div className="flex gap-2">
+                                <dt>INDEX</dt>
+                                <dd className="text-bone">
+                                  {runResult.recordIndex}
+                                </dd>
+                              </div>
+                              <div className="flex gap-2">
+                                <dt>COMMIT</dt>
+                                <dd className="break-all text-bone">
+                                  {runResult.commit}
+                                </dd>
+                              </div>
+                            </dl>
+                          </div>
+                        ) : null}
+                      </form>
+                    ) : deleteAgentId === agent.id ? (
+                      <div className="mt-4 flex flex-col gap-3 rounded-panel border border-line bg-ink p-4">
+                        <p className="text-sm text-bone">
+                          Delete{" "}
+                          <span className="font-mono">{agent.name}</span>? This
+                          removes the agent registration. Sealed predictions
+                          cannot exist on a deletable agent.
+                        </p>
+                        {deleteError !== null ? (
+                          <p role="alert" className="font-mono text-sm text-seal">
+                            {deleteError}
+                          </p>
+                        ) : null}
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            disabled={deleteStatus === "sending"}
+                            onClick={() => onDelete(agent.id)}
+                            className="h-11 rounded-field border border-seal bg-transparent px-5 font-mono text-sm uppercase text-seal hover:bg-seal hover:text-void disabled:opacity-50"
+                          >
+                            {deleteStatus === "sending"
+                              ? "Deleting"
+                              : "Delete agent"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteAgentId(null);
+                              setDeleteError(null);
+                            }}
+                            className="h-11 rounded-field border border-line px-5 font-mono text-sm uppercase text-mute hover:text-bone"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-3 flex flex-wrap gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRunAgentId(agent.id);
+                            setRunError(null);
+                            setRunResult(null);
+                          }}
+                          className="h-11 rounded-field border border-line px-4 font-mono text-xs uppercase text-mute hover:border-seal hover:text-seal"
+                        >
+                          Run my agent
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditAgentId(agent.id);
+                            setEditDraft(toEditDraft(agent));
+                            setEditError(null);
+                          }}
+                          className="h-11 rounded-field border border-line px-4 font-mono text-xs uppercase text-mute hover:border-bone hover:text-bone"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={agent.sealCount > 0}
+                          title={
+                            agent.sealCount > 0
+                              ? "Sealed predictions exist for this agent"
+                              : undefined
+                          }
+                          onClick={() => {
+                            setDeleteAgentId(agent.id);
+                            setDeleteError(null);
+                          }}
+                          className="h-11 rounded-field border border-line px-4 font-mono text-xs uppercase text-mute hover:border-seal hover:text-seal disabled:opacity-40 disabled:hover:border-line disabled:hover:text-mute"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </li>
             ))}

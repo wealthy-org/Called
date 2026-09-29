@@ -94,7 +94,7 @@ describe("isAdmin", () => {
 });
 
 describe("ROBINHOOD_CHAIN_ID", () => {
-  it("is 2021", () => {
-    expect(ROBINHOOD_CHAIN_ID).toBe(2021);
+  it("is 46630", () => {
+    expect(ROBINHOOD_CHAIN_ID).toBe(46630);
   });
 });
