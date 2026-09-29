@@ -1858,86 +1858,308 @@ body {
   color: var(--seal);
 }
 
-/* Dossier skeleton */
+/* Dossier skeleton — mirrors the real two-column layout */
 
 .dossier-skeleton {
   padding-top: 32px;
 }
 
-.skeleton-kicker {
+.dossier-skeleton .skeleton-breadcrumb {
+  height: 12px;
+  width: 120px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.dossier-skeleton .skeleton-kicker {
   height: 12px;
   width: 80px;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 16px;
+  margin-top: 24px;
 }
 
-.skeleton-title {
-  height: 60px;
+.dossier-skeleton .skeleton-title {
+  height: clamp(48px, 6vw, 82px);
   width: 80%;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 8px;
+  margin-top: 14px;
+  max-width: 880px;
 }
 
-.skeleton-title-short {
-  height: 60px;
-  width: 50%;
+.skeleton-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.skeleton-identity-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.skeleton-id-label {
+  height: 10px;
+  width: 36px;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 24px;
 }
 
-.skeleton-meta {
+.skeleton-id-value {
+  height: 10px;
+  width: 96px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-id-value.short {
+  width: 56px;
+}
+
+.dossier-skeleton-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 56px;
+  align-items: start;
+  margin-top: 40px;
+}
+
+.dossier-skeleton-left {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.skeleton-dl {
+  border-top: 1px solid var(--line);
+}
+
+.skeleton-dl-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+
+.skeleton-dt {
+  height: 10px;
+  width: 64px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-dd {
   height: 12px;
-  width: 300px;
+  width: 45%;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 6px;
 }
 
-.skeleton-meta-short {
+.skeleton-dd.wide {
+  width: 75%;
+}
+
+.skeleton-dd.short {
+  width: 28%;
+}
+
+.skeleton-countdown {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px 24px;
+  background: var(--ink);
+}
+
+.skeleton-countdown-label {
+  display: block;
+  height: 10px;
+  width: 110px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-countdown-value {
+  display: block;
+  height: 36px;
+  width: 60%;
+  background: var(--line);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.skeleton-countdown-hint {
+  display: block;
   height: 12px;
-  width: 200px;
+  width: 85%;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 24px;
+  margin-top: 10px;
 }
 
-.skeleton-row {
-  height: 40px;
+.skeleton-section-label {
+  display: block;
+  height: 10px;
+  width: 72px;
+  background: var(--line);
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+
+.skeleton-lifecycle-bar {
+  display: block;
+  height: 44px;
   width: 100%;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 4px;
 }
 
-.skeleton-divider {
-  height: 1px;
+.skeleton-rule {
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+
+.skeleton-rule-title {
+  display: block;
+  height: 12px;
+  width: 140px;
   background: var(--line);
-  margin: 24px 0;
+  border-radius: 2px;
 }
 
-.skeleton-slip {
-  height: 200px;
+.skeleton-rule-body {
+  display: block;
+  height: 12px;
+  width: 90%;
+  background: var(--line);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+.skeleton-forecast-panel {
   background: var(--ink);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 24px;
+  padding: 28px;
 }
 
-.skeleton-slip-title {
+.skeleton-panel-title {
+  display: block;
   height: 28px;
   width: 60%;
   background: var(--line);
   border-radius: 2px;
-  margin-bottom: 16px;
 }
 
-.skeleton-slip-body {
-  height: 80px;
+.skeleton-panel-hint {
+  display: block;
+  height: 12px;
+  width: 80%;
   background: var(--line);
   border-radius: 2px;
+  margin-top: 10px;
+}
+
+.skeleton-panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.skeleton-panel-label {
+  height: 10px;
+  width: 64px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-slider {
+  display: block;
+  height: 44px;
+  width: 100%;
+  background: var(--line);
+  border-radius: 4px;
+}
+
+.skeleton-textarea {
+  display: block;
+  height: 90px;
+  width: 100%;
+  background: var(--line);
+  border-radius: 4px;
+}
+
+.skeleton-char-count {
+  display: block;
+  height: 10px;
+  width: 48px;
+  background: var(--line);
+  border-radius: 2px;
+  align-self: flex-end;
+}
+
+.skeleton-btn {
+  display: block;
+  height: 46px;
+  width: 100%;
+  background: var(--line);
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.skeleton-history {
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+  margin-top: 48px;
+}
+
+.skeleton-history-title {
+  display: block;
+  height: 12px;
+  width: 130px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-history-list {
+  margin-top: 20px;
+}
+
+.skeleton-history-step {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.skeleton-history-date {
+  height: 10px;
+  width: 88px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-history-text {
+  height: 10px;
+  width: 55%;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.skeleton-history-text.wide {
+  width: 72%;
+}
+
+.skeleton-history-text.short {
+  width: 36%;
 }
 
 /* Dossier error */
@@ -1954,7 +2176,16 @@ body {
     gap: 40px;
   }
 
+  .dossier-skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
   .dossier-right {
+    order: -1;
+  }
+
+  .dossier-skeleton-right {
     order: -1;
   }
 
@@ -1997,6 +2228,15 @@ body {
 
   .forecast-panel {
     padding: 20px;
+  }
+
+  .skeleton-forecast-panel {
+    padding: 20px;
+  }
+
+  .skeleton-history-step {
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
   }
 }
 
