@@ -10,6 +10,11 @@ interface Trigger {
 }
 
 const TRIGGERS: Record<string, Trigger> = {
+  "*/5 * * * *": {
+    method: "POST",
+    path: "/api/cron/open-questions",
+    description: "Run the house model once per newly opened question",
+  },
   "*/15 * * * *": {
     method: "POST",
     path: "/api/questions/close",
@@ -82,6 +87,7 @@ export default {
       return Response.json({
         ok: true,
         cron: {
+          "*/5 * * * *": "/api/cron/open-questions",
           "*/15 * * * *": "/api/questions/close",
           "0 21 * * *": "/api/cron/settle",
           "30 6 * * *": "/api/cron/house-models",
