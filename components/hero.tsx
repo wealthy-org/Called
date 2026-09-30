@@ -56,16 +56,11 @@ function useHorizonCanvas(reduced: boolean) {
     const pointer = { x: -9999, y: -9999, active: false };
     const monoStack = readFontStack("--font-plex-mono", "monospace");
 
-    interface Cell {
-      x: number;
-      y: number;
-      size: number;
-      alpha: number;
-      charIndex: number;
-    }
-    let cells: Cell[] = [];
+    let grid: string[] = [];
     let width = 0;
     let height = 0;
+    let cols = 0;
+    let rows = 0;
 
     function build() {
       if (canvas === null) {
@@ -80,61 +75,73 @@ function useHorizonCanvas(reduced: boolean) {
       context!.textBaseline = "middle";
       context!.textAlign = "center";
 
-      cells = [];
-      const ridge = height * 0.8;
-      for (let y = CELL / 2; y < height; y += CELL) {
-        for (let x = CELL / 2; x < width; x += CELL) {
-          const ridgeY = ridge +
-            Math.sin(x * 0.0045) * height * 0.045 +
-            Math.sin(x * 0.012) * height * 0.018;
-          const distance = y - ridgeY;
-          const band = height * 0.055;
-          const density = distance >= 0 ? 1 : 0.035;
-          if (Math.random() > density || Math.abs(distance) > band * 3) {
-            continue;
-          }
-          const depth = clamp(distance / (height - ridgeY || 1), 0, 1);
-          const alpha = clamp(0.92 * Math.exp(-Math.abs(distance) / band), 0, 0.92) *
-            (distance > 0 ? 1 - depth * 0.78 : 0.7);
-          if (alpha <= 0.02) {
-            continue;
-          }
-          cells.push({
-            x,
-            y,
-            size: 12 + clamp(distance / band, 0, 1) * 10,
-            alpha,
-            charIndex: Math.floor(Math.random() * HEX.length),
-          });
-        }
+      cols = Math.ceil(width / CELL);
+      rows = Math.ceil(height / CELL);
+      grid = [];
+      for (let i = 0; i < cols * rows; i++) {
+        grid.push(HEX[Math.floor(Math.random() * HEX.length)]);
       }
+      paint(performance.now());
     }
 
-    function paint(now = performance.now()) {
+    function rnd(x: number, y: number) {
+      const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+      return n - Math.floor(n);
+    }
+
+    function ridgeCalc(x: number, t: number) {
+      return (
+        height * 0.8 +
+        Math.sin(x * 0.0045 + t * 0.00012) * height * 0.045 +
+        Math.sin(x * 0.012 - t * 0.00007) * height * 0.018
+      );
+    }
+
+    function paint(t: number) {
       context!.clearRect(0, 0, width, height);
-      for (const cell of cells) {
-        const ridgeY = height * 0.8 +
-          Math.sin(cell.x * 0.0045 + now * 0.00012) * height * 0.045 +
-          Math.sin(cell.x * 0.012 - now * 0.00007) * height * 0.018;
-        const distance = cell.y - ridgeY;
-        const band = height * 0.055;
-        let alpha = clamp(0.92 * Math.exp(-Math.abs(distance) / band), 0, 0.92) *
-          (distance > 0 ? 1 - clamp(distance / (height - ridgeY || 1), 0, 1) * 0.78 : 0.7);
-        if (pointer.active) {
-          const dx = cell.x - pointer.x;
-          const dy = cell.y - pointer.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance < POINTER_LIGHT_RADIUS) {
-            alpha = clamp(alpha + 0.6 * (1 - distance / POINTER_LIGHT_RADIUS), 0, 1);
+      const sigma = height * 0.055;
+      
+      for (let y = 0; y < rows; y++) {
+        const py = y * CELL + CELL / 2;
+        const depth = py / height;
+        context!.font = `500 ${(12 + depth * 10).toFixed(1)}px ${monoStack}, monospace`;
+        
+        for (let x = 0; x < cols; x++) {
+          const px = x * CELL + CELL / 2;
+          const dy = py - ridgeCalc(px, t);
+          const band = Math.exp(-(dy * dy) / (2 * sigma * sigma));
+          const below = dy > 0 ? Math.max(0, 1 - dy / (height * 0.24)) : 0;
+          const above = dy < 0 ? Math.max(0, 1 + dy / (height * 0.7)) : 0;
+          const top = Math.max(0, 1 - py / (height * 0.4));
+          
+          if (dy < -height * 0.02 && rnd(x, y) > 0.26 + 0.74 * band + above * 0.12 + top * 0.55) {
+            continue;
           }
+          
+          let a = 0.05 + 0.62 * band + 0.18 * below + 0.06 * above * above + 0.26 * top * top;
+          
+          if (pointer.active) {
+            const dxm = px - pointer.x;
+            const dym = py - pointer.y;
+            const dm = Math.hypot(dxm, dym);
+            if (dm < POINTER_LIGHT_RADIUS) {
+              a += (1 - dm / POINTER_LIGHT_RADIUS) * 0.6;
+            }
+          }
+          
+          a = Math.min(a, 0.92);
+          if (py > height * 0.8) {
+            a *= Math.max(0, 1 - (py - height * 0.8) / (height * 0.2));
+          }
+          
+          const k = band * 0.55;
+          const r = Math.round(236 + 19 * k);
+          const g = Math.round(233 - 143 * k);
+          const b = Math.round(228 - 174 * k);
+          
+          context!.fillStyle = `rgba(${r},${g},${b},${a.toFixed(3)})`;
+          context!.fillText(grid[y * cols + x], px, py);
         }
-        context!.font = `500 ${cell.size}px ${monoStack}, monospace`;
-        const nearRidge = clamp(1 - Math.abs(distance) / (band * 3), 0, 1);
-        const red = Math.round(161 + (236 - 161) * nearRidge * 0.7);
-        const green = Math.round(157 + (233 - 157) * nearRidge * 0.7);
-        const blue = Math.round(149 + (228 - 149) * nearRidge * 0.7);
-        context!.fillStyle = `rgba(${red},${green},${blue},${alpha})`;
-        context!.fillText(HEX.charAt(cell.charIndex), cell.x, cell.y);
       }
     }
 
@@ -149,18 +156,17 @@ function useHorizonCanvas(reduced: boolean) {
       const delta = now - last;
       last = now;
       tickAccumulator += delta;
+      
       if (tickAccumulator >= HORIZON_TICK_MS) {
-        tickAccumulator = 0;
-        const changes = Math.floor(cells.length * HORIZON_TICK_SHARE);
-        for (let i = 0; i < changes; i += 1) {
-          const cell = cells[Math.floor(Math.random() * cells.length)];
-          if (cell) {
-            const advance = 1 + Math.floor(Math.random() * 3);
-            cell.charIndex = (cell.charIndex + advance) % HEX.length;
-          }
+        tickAccumulator -= HORIZON_TICK_MS;
+        const changes = Math.floor(cols * rows * HORIZON_TICK_SHARE);
+        for (let i = 0; i < changes; i++) {
+          grid[Math.floor(Math.random() * grid.length)] = HEX[Math.floor(Math.random() * HEX.length)];
         }
       }
+      
       paint(now);
+      
       if (running) {
         frame = requestAnimationFrame(step);
       }
@@ -169,7 +175,7 @@ function useHorizonCanvas(reduced: boolean) {
     if (!reduced) {
       frame = requestAnimationFrame(step);
     } else {
-      paint();
+      paint(performance.now());
     }
 
     function onPointerMove(event: PointerEvent) {
@@ -506,7 +512,7 @@ export function Hero({ headHash, recordCount, anchorStatus }: HeroProps) {
                 "linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent)",
             }}
           >
-             <div className="marq-track ticker-track inline-flex whitespace-nowrap font-mono text-xs">
+             <div className="marq-track ticker-track flex w-max whitespace-nowrap font-mono text-xs">
               {[0, 1].map((copy) => (
                 <span key={copy} className="pr-16">
                   <span className="text-mute">Session head </span>
