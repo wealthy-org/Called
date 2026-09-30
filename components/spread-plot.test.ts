@@ -82,6 +82,22 @@ describe("layoutSpreadMarkers", () => {
   it("handles an empty list", () => {
     expect(layoutSpreadMarkers([])).toEqual([]);
   });
+
+  it("keeps all markers within 0-100 bounds for dense 13-forecaster cluster", () => {
+    const dense13 = [
+      forecast("f0", 0.10), forecast("f1", 0.12), forecast("f2", 0.15),
+      forecast("f3", 0.18), forecast("f4", 0.20), forecast("f5", 0.22),
+      forecast("f6", 0.24), forecast("f7", 0.26), forecast("f8", 0.28),
+      forecast("f9", 0.29), forecast("f10", 0.11), forecast("f11", 0.13),
+      forecast("f12", 0.17),
+    ];
+    const markers = layoutSpreadMarkers(dense13, true);
+    expect(markers).toHaveLength(13);
+    for (const m of markers) {
+      expect(m.left).toBeGreaterThanOrEqual(0);
+      expect(m.left).toBeLessThanOrEqual(100);
+    }
+  });
 });
 
 describe("spreadSummary", () => {

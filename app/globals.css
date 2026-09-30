@@ -455,17 +455,23 @@ body {
 }
 
 .home-page .spread,
-.result-view .spread {
+.result-view .spread,
+.report-page .spread,
+.report-spread .spread {
   position: relative;
   min-height: 190px;
   margin: 26px 0 34px;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
   font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-size: 12px;
 }
 
 .home-page .spread .axis,
-.result-view .spread .axis {
+.result-view .spread .axis,
+.report-page .spread .axis,
+.report-spread .spread .axis {
   position: absolute;
   inset-inline: 0;
   top: 95px;
@@ -474,7 +480,9 @@ body {
 }
 
 .home-page .spread .tick,
-.result-view .spread .tick {
+.result-view .spread .tick,
+.report-page .spread .tick,
+.report-spread .spread .tick {
   position: absolute;
   top: 89px;
   width: 1px;
@@ -483,7 +491,9 @@ body {
 }
 
 .home-page .spread .tl,
-.result-view .spread .tl {
+.result-view .spread .tl,
+.report-page .spread .tl,
+.report-spread .spread .tl {
   position: absolute;
   top: 110px;
   transform: translateX(-50%);
@@ -492,7 +502,9 @@ body {
 }
 
 .home-page .spread .mk,
-.result-view .spread .mk {
+.result-view .spread .mk,
+.report-page .spread .mk,
+.report-spread .spread .mk {
   position: absolute;
   display: block;
   transform: translateX(-50%);
@@ -504,7 +516,9 @@ body {
 }
 
 .home-page .spread .mk i,
-.result-view .spread .mk i {
+.result-view .spread .mk i,
+.report-page .spread .mk i,
+.report-spread .spread .mk i {
   display: block;
   width: 10px;
   height: 10px;
@@ -515,34 +529,48 @@ body {
 .home-page .spread .mk span,
 .home-page .spread .mk small,
 .result-view .spread .mk span,
-.result-view .spread .mk small {
+.result-view .spread .mk small,
+.report-page .spread .mk span,
+.report-page .spread .mk small,
+.report-spread .spread .mk span,
+.report-spread .spread .mk small {
   display: block;
 }
 
 .home-page .spread .mk small,
-.result-view .spread .mk small {
+.result-view .spread .mk small,
+.report-page .spread .mk small,
+.report-spread .spread .mk small {
   color: var(--mute);
   font-size: 11px;
 }
 
 .home-page .spread .mk.up,
-.result-view .spread .mk.up {
+.result-view .spread .mk.up,
+.report-page .spread .mk.up,
+.report-spread .spread .mk.up {
   bottom: 105px;
 }
 
 .home-page .spread .mk.up i,
-.result-view .spread .mk.up i {
+.result-view .spread .mk.up i,
+.report-page .spread .mk.up i,
+.report-spread .spread .mk.up i {
   margin-top: 6px;
 }
 
 .home-page .spread .mk.down,
-.result-view .spread .mk.down {
+.result-view .spread .mk.down,
+.report-page .spread .mk.down,
+.report-spread .spread .mk.down {
   top: 112px;
   padding-top: 22px;
 }
 
 .home-page .spread .mk.down i,
-.result-view .spread .mk.down i {
+.result-view .spread .mk.down i,
+.report-page .spread .mk.down i,
+.report-spread .spread .mk.down i {
   position: absolute;
   top: 0;
   left: 50%;
@@ -550,7 +578,9 @@ body {
 }
 
 .home-page .spread .mk.out,
-.result-view .spread .mk.out {
+.result-view .spread .mk.out,
+.report-page .spread .mk.out,
+.report-spread .spread .mk.out {
   right: 0;
   left: auto !important;
   transform: none;
@@ -560,7 +590,9 @@ body {
 }
 
 .home-page .spread .mk.out i,
-.result-view .spread .mk.out i {
+.result-view .spread .mk.out i,
+.report-page .spread .mk.out i,
+.report-spread .spread .mk.out i {
   position: absolute;
   top: 0;
   right: 0;
@@ -570,12 +602,16 @@ body {
 }
 
 .home-page .spread .mk.out span,
-.result-view .spread .mk.out span {
+.result-view .spread .mk.out span,
+.report-page .spread .mk.out span,
+.report-spread .spread .mk.out span {
   padding-top: 22px;
 }
 
 .home-page .spread .mk.out small,
-.result-view .spread .mk.out small {
+.result-view .spread .mk.out small,
+.report-page .spread .mk.out small,
+.report-spread .spread .mk.out small {
   color: var(--seal);
 }
 

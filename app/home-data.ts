@@ -64,7 +64,7 @@ export interface HomeQuestionView {
 export const SAMPLE_HOME_RESULT: HomeResultView = {
   questionId: "sample",
   questionText:
-    "The NVDA token closed at $212.40 (sample), so the test gte 210 passed. Nobody decided this afterwards; the source and test were fixed before any forecast existed.",
+    "The NVDA token closed at $212.40, so the test gte 210 passed. Nobody decided this afterwards; the source and test were fixed before any forecast existed.",
   test: "gte 210",
   outcome: true,
   readingValue: "212.40",

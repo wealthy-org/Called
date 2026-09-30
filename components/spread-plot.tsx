@@ -116,35 +116,51 @@ export function spreadSummary(forecasts: SpreadForecast[], outcome?: boolean): s
 
 export function SpreadPlot({ forecasts, outcome, className }: SpreadPlotProps) {
   const markers = layoutSpreadMarkers(forecasts, outcome);
+  const maxOffset = markers.reduce((max, m) => Math.max(max, m.offset), 0);
+  const extraHeight = maxOffset > 0 ? maxOffset + 22 : 0;
+  const containerStyle: React.CSSProperties = {
+    minHeight: 190 + extraHeight,
+    width: "100%",
+    maxWidth: "100%",
+    overflow: "clip",
+  };
   return (
-    <figure className={`spread ${className ?? ""}`} role="img" aria-label={spreadSummary(forecasts, outcome)}>
+    <figure className={`spread ${className ?? ""}`} role="img" aria-label={spreadSummary(forecasts, outcome)} style={containerStyle}>
       <div className="axis" aria-hidden="true" />
       {[0, 50, 100].map((tick) => <span key={`tick-${tick}`} className="tick" style={{ left: `${tick}%` }} aria-hidden="true" />)}
       {[0, 50, 100].map((tick) => <span key={`label-${tick}`} className="tl" style={{ left: `${tick}%` }} aria-hidden="true">{tick}%</span>)}
-      {markers.map((marker) => (
-        <span
-          key={marker.forecast.id}
-          className={`mk ${marker.lane}`}
-          style={{
-            left: `${marker.left}%`,
-            marginTop: marker.lane === "up" ? -marker.offset : marker.offset,
-          }}
-        >
-          {marker.lane === "up" ? (
-            <>
-              <span>{marker.forecast.label}</span>
-              <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
-              <i aria-hidden="true" />
-            </>
-          ) : (
-            <>
-              <i aria-hidden="true" />
-              <span>{marker.forecast.label}</span>
-              <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
-            </>
-          )}
-        </span>
-      ))}
+      {markers.map((marker) => {
+        const isEdgeLeft = marker.left <= 8;
+        const isEdgeRight = marker.left >= 92 && marker.forecast.id !== "__outcome__";
+        const textAlign = isEdgeLeft ? "left" : isEdgeRight ? "right" : "center";
+        const transform = isEdgeLeft ? "translateX(0)" : isEdgeRight ? "translateX(-100%)" : "translateX(-50%)";
+        return (
+          <span
+            key={marker.forecast.id}
+            className={`mk ${marker.lane}`}
+            style={{
+              left: `${marker.left}%`,
+              marginTop: marker.lane === "up" ? -marker.offset : marker.offset,
+              textAlign,
+              transform,
+            }}
+          >
+            {marker.lane === "up" ? (
+              <>
+                <span>{marker.forecast.label}</span>
+                <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+                <i aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                <i aria-hidden="true" />
+                <span>{marker.forecast.label}</span>
+                <small>{Math.round(clampPercent(marker.forecast.p) * 100)}%</small>
+              </>
+            )}
+          </span>
+        );
+      })}
       {outcome !== undefined && (
         <span className="mk down out"><i aria-hidden="true" /><span>{outcome ? "YES" : "NO"}</span><small>outcome</small></span>
       )}
